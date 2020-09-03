@@ -1,11 +1,8 @@
 package main
 
 import (
-	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"net/http"
-	"os"
 	"path"
 	"strconv"
 )
@@ -32,12 +29,7 @@ func (s *VMServer) list(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, fmt.Sprintf("%v not allowed", r.Method), http.StatusMethodNotAllowed)
 		return
 	}
-	vms, err := json.Marshal(s.vmm.List())
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-	w.Write(vms)
+	w.Write([]byte(s.vmm.List().String()))
 }
 
 func (s *VMServer) launch(w http.ResponseWriter, r *http.Request) {
@@ -80,41 +72,5 @@ func (s *VMServer) inspect(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
-	vm, err := json.Marshal(s.vmm.Inspect(id))
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-	w.Write(vm)
-}
-
-// loadVMs loads the VM list from a JSON file (VMS_JSON)
-func loadVMs() VMList {
-	_, err := os.Stat(VMsJSON)
-	if err == os.ErrNotExist {
-		saveVMs(defaultVMList)
-	} else {
-		dieOnError(err, "Error stating %q", VMsJSON)
-	}
-	f, err := os.Open(VMsJSON)
-	dieOnError(err, "Error opening %q", VMsJSON)
-
-	defer f.Close()
-	vmsJSON, err := ioutil.ReadAll(f)
-	dieOnError(err, "Error reading from %q", VMsJSON)
-
-	vms := make(VMList, 0)
-	err = json.Unmarshal(vmsJSON, &vms)
-	dieOnError(err, "Error JSON-parsing from %q", VMsJSON)
-
-	return vms
-}
-
-// saveVMs saves the VM list to a JSON file (VMS_JSON)
-func saveVMs(vms VMList) {
-	vmsJSON, err := json.Marshal(vms)
-	dieOnError(err, "Error writing JSON for %q", VMsJSON)
-
-	err = ioutil.WriteFile(VMsJSON, vmsJSON, 0644)
-	dieOnError(err, "Error saving %q", VMsJSON)
+	w.Write([]byte(s.vmm.Inspect(id).String()))
 }

@@ -26,10 +26,10 @@ const (
 
 const (
 	// DefaultStartDelay Start VM process simulated delay
-	DefaultStartDelay = 10 * time.Minute
+	DefaultStartDelay = 10 * time.Second
 
 	// DefaultStopDelay Stop VM process simulated delay
-	DefaultStopDelay = 5 * time.Minute
+	DefaultStopDelay = 5 * time.Second
 )
 
 // StartDelay for launch operations (not a constant so unit test can change it)
@@ -62,6 +62,9 @@ var emptyVM = VM{}
 
 // VM by default dumps itself in JSON format
 func (vm VM) String() string {
+	if vm == emptyVM {
+		return "{}"
+	}
 	vmJSON, err := json.Marshal(vm)
 	dieOnError(err, "Can't generate JSON for VM object %#v", vm)
 	return string(vmJSON)

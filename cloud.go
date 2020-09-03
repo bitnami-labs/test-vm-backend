@@ -1,7 +1,6 @@
 package main
 
 import (
-	"encoding/json"
 	"fmt"
 	"sync"
 	"time"
@@ -13,60 +12,53 @@ type Cloud struct {
 	vms  VMList
 }
 
-// Cloud by default dumps itself in JSON format
-func (m *Cloud) String() string {
-	mJSON, err := json.Marshal(m)
-	dieOnError(err, "Can't generate JSON for Cloud object: %#v", m)
-	return string(mJSON)
-}
-
 // List the VMs handled under this Cloud
-func (m *Cloud) List() VMList {
-	m.lock.RLock()
-	defer m.lock.RUnlock()
+func (c *Cloud) List() VMList {
+	c.lock.RLock()
+	defer c.lock.RUnlock()
 
-	return m.vms.clone()
+	return c.vms.clone()
 }
 
 // Inspect a VM data by id (might not find it and return nil)
-func (m *Cloud) Inspect(id int) VM {
-	m.lock.RLock()
-	defer m.lock.RUnlock()
+func (c *Cloud) Inspect(id int) VM {
+	c.lock.RLock()
+	defer c.lock.RUnlock()
 
-	return m.vms.lookup(id)
+	return c.vms.lookup(id)
 }
 
 // Launch a VM by id
-func (m *Cloud) Launch(id int) error {
-	m.lock.Lock()
-	defer m.lock.Unlock()
+func (c *Cloud) Launch(id int) error {
+	c.lock.Lock()
+	defer c.lock.Unlock()
 
-	vm, err := m.vm2state(id, STARTING)
+	vm, err := c.vm2state(id, STARTING)
 	if err != nil {
 		return err
 	}
-	m.vms[id] = vm
+	c.vms[id] = vm
 	time.AfterFunc(StartDelay, func() {
 		if vm, err := vm.WithState(RUNNING); err == nil {
-			m.vms[id] = vm
+			c.vms[id] = vm
 		}
 	})
 	return nil
 }
 
 // Stop a VM by id
-func (m *Cloud) Stop(id int) error {
-	m.lock.Lock()
-	defer m.lock.Unlock()
+func (c *Cloud) Stop(id int) error {
+	c.lock.Lock()
+	defer c.lock.Unlock()
 
-	vm, err := m.vm2state(id, STOPPING)
+	vm, err := c.vm2state(id, STOPPING)
 	if err != nil {
 		return err
 	}
-	m.vms[id] = vm
+	c.vms[id] = vm
 	time.AfterFunc(StopDelay, func() {
 		if vm, err := vm.WithState(STOPPED); err == nil {
-			m.vms[id] = vm
+			c.vms[id] = vm
 		}
 	})
 	return nil
@@ -74,19 +66,19 @@ func (m *Cloud) Stop(id int) error {
 
 // Delete VM by id. Idempotent, will return true when VM is actually deleted
 // and false if it was already not there.
-func (m *Cloud) Delete(id int) bool {
-	m.lock.Lock()
-	defer m.lock.Unlock()
+func (c *Cloud) Delete(id int) bool {
+	c.lock.Lock()
+	defer c.lock.Unlock()
 
-	if m.vms.lookup(id) == emptyVM {
+	if c.vms.lookup(id) == emptyVM {
 		return false
 	}
-	m.vms[id] = emptyVM
+	c.vms[id] = emptyVM
 	return true
 }
 
-func (m *Cloud) vm2state(id int, state VMState) (VM, error) {
-	vm := m.vms.lookup(id)
+func (c *Cloud) vm2state(id int, state VMState) (VM, error) {
+	vm := c.vms.lookup(id)
 	if vm == emptyVM {
 		return emptyVM, fmt.Errorf("VM with id %d not found", id)
 	}

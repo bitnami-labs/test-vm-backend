@@ -25,34 +25,34 @@ func NewDefaultCloud() Cloud {
 }
 
 func TestList(t *testing.T) {
-	m := NewDefaultCloud()
+	c := NewDefaultCloud()
 	wanted := cloneDefaultVMList().String()
-	got := m.List().String()
+	got := c.List().String()
 	if got != wanted {
 		t.Fatalf("Expected %q but got %q", wanted, got)
 	}
 }
 
 func TestInspect(t *testing.T) {
-	m := NewDefaultCloud()
+	c := NewDefaultCloud()
 	wanted := cloneDefaultVMList()[GoodID].String()
-	got := m.Inspect(GoodID).String()
+	got := c.Inspect(GoodID).String()
 	if got != wanted {
 		t.Fatalf("Expected %q but got %q", wanted, got)
 	}
 }
 
 func TestBadInspect(t *testing.T) {
-	m := NewDefaultCloud()
+	c := NewDefaultCloud()
 	var wanted VM = emptyVM
-	got := m.Inspect(BadID)
+	got := c.Inspect(BadID)
 	if got != wanted {
 		t.Fatalf("Expected %v but got %v", wanted, got)
 	}
 }
 
-func VMByIndexInState(t *testing.T, m *Cloud, id int, state VMState) VM {
-	vm, err := m.vms[id].WithState(state)
+func VMByIndexInState(t *testing.T, c *Cloud, id int, state VMState) VM {
+	vm, err := c.vms[id].WithState(state)
 	if err != nil {
 		t.Fatalf("Failed to set VM state %v: %v", vm, err)
 	}
@@ -66,86 +66,86 @@ func shrinkTime() {
 
 func TestLaunch(t *testing.T) {
 	shrinkTime()
-	m := NewDefaultCloud()
-	wanted := VMByIndexInState(t, &m, GoodID, STARTING).String()
-	if err := m.Launch(GoodID); err != nil {
+	c := NewDefaultCloud()
+	wanted := VMByIndexInState(t, &c, GoodID, STARTING).String()
+	if err := c.Launch(GoodID); err != nil {
 		t.Fatalf("Failed to Launch VM %q: %q", GoodID, err)
 	}
-	if got := m.vms[GoodID].String(); got != wanted {
+	if got := c.vms[GoodID].String(); got != wanted {
 		t.Fatalf("Expected %q but got %q", wanted, got)
 	}
 	time.Sleep(2 * StartDelay)
-	wanted2 := VMByIndexInState(t, &m, GoodID, RUNNING).String()
-	if got2 := m.vms[GoodID].String(); got2 != wanted2 {
+	wanted2 := VMByIndexInState(t, &c, GoodID, RUNNING).String()
+	if got2 := c.vms[GoodID].String(); got2 != wanted2 {
 		t.Fatalf("Expected %q but got %q", wanted2, got2)
 	}
 }
 
 func TestBadVMLaunch(t *testing.T) {
-	m := NewDefaultCloud()
+	c := NewDefaultCloud()
 	wanted := fmt.Sprintf("VM with id %d not found", BadID)
-	if got := m.Launch(BadID); got.Error() != wanted {
+	if got := c.Launch(BadID); got.Error() != wanted {
 		t.Fatalf("Unexpected Launch VM error: %q", got)
 	}
 }
 
 func TestBadStateLaunch(t *testing.T) {
-	m := NewDefaultCloud()
+	c := NewDefaultCloud()
 	var badState VMState = RUNNING
-	m.vms[GoodID].State = badState
+	c.vms[GoodID].State = badState
 	wanted := fmt.Sprintf("Illegal transition from %q to %q", badState, STARTING)
-	if got := m.Launch(GoodID); got.Error() != wanted {
+	if got := c.Launch(GoodID); got.Error() != wanted {
 		t.Fatalf("Unexpected Launch VM error: %q", got)
 	}
 }
 
 func TestStop(t *testing.T) {
 	shrinkTime()
-	m := NewDefaultCloud()
-	m.vms[GoodID].State = RUNNING
-	wanted := VMByIndexInState(t, &m, GoodID, STOPPING).String()
-	if err := m.Stop(GoodID); err != nil {
+	c := NewDefaultCloud()
+	c.vms[GoodID].State = RUNNING
+	wanted := VMByIndexInState(t, &c, GoodID, STOPPING).String()
+	if err := c.Stop(GoodID); err != nil {
 		t.Fatalf("Failed to Stop VM %q: %q", GoodID, err)
 	}
-	if got := m.vms[GoodID].String(); got != wanted {
+	if got := c.vms[GoodID].String(); got != wanted {
 		t.Fatalf("Expected %q but got %q", wanted, got)
 	}
 	time.Sleep(2 * StopDelay)
-	wanted2 := VMByIndexInState(t, &m, GoodID, STOPPED).String()
-	if got2 := m.vms[GoodID].String(); got2 != wanted2 {
+	wanted2 := VMByIndexInState(t, &c, GoodID, STOPPED).String()
+	if got2 := c.vms[GoodID].String(); got2 != wanted2 {
 		t.Fatalf("Expected %q but got %q", wanted2, got2)
 	}
 }
 func TestBadVMStop(t *testing.T) {
-	m := NewDefaultCloud()
-	m.vms[GoodID].State = RUNNING
+	c := NewDefaultCloud()
+	c.vms[GoodID].State = RUNNING
 	wanted := fmt.Sprintf("VM with id %d not found", BadID)
-	if got := m.Stop(BadID); got.Error() != wanted {
+	if got := c.Stop(BadID); got.Error() != wanted {
 		t.Fatalf("Unexpected Stop VM error: %q", got)
 	}
 }
 
 func TestBadStateStop(t *testing.T) {
-	m := NewDefaultCloud()
+	c := NewDefaultCloud()
 	// No extra setup needed: initial state Stopped is already bad for stopping
 	wanted := fmt.Sprintf("Illegal transition from %q to %q", STOPPED, STOPPING)
-	if got := m.Stop(GoodID); got == nil || got.Error() != wanted {
+	if got := c.Stop(GoodID); got == nil || got.Error() != wanted {
 		t.Fatalf("Unexpected Stop VM error: %q", got)
 	}
 }
 
 func TestDelete(t *testing.T) {
-	m := NewDefaultCloud()
+	c := NewDefaultCloud()
 	wanted := true
-	if got := m.Delete(GoodID); got != wanted {
+	if got := c.Delete(GoodID); got != wanted {
 		t.Fatalf("Expected %v but got %v", wanted, got)
 	}
 }
 
 func TestBadDelete(t *testing.T) {
-	m := NewDefaultCloud()
+	c := NewDefaultCloud()
 	wanted := false
-	if got := m.Delete(BadID); got != wanted {
+	if got := c.Delete(BadID); got != wanted {
 		t.Fatalf("Expected deleted=%v but got deleted=%v", wanted, got)
 	}
 }
