@@ -11,9 +11,12 @@ import (
 
 // loadVMs loads the VM list from a JSON file (VMS_JSON)
 func loadVMs() VMList {
+	fmt.Printf("Loading fake Cloud state from local file %q\n", VMsJSON)
 	_, err := os.Stat(VMsJSON)
 	if errors.Is(err, os.ErrNotExist) {
+		fmt.Printf("Missing %q, generating one...\n", VMsJSON)
 		saveVMs(defaultVMList)
+		fmt.Printf("Tip: You can tweak %q  adding VMs or changing states for next run.\n", VMsJSON)
 	} else {
 		dieOnError(err, "Error stating %q", VMsJSON)
 	}
