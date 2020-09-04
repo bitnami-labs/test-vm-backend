@@ -15,13 +15,18 @@ Launch the server on a terminal:
 
 ```bash
 $ go build && ./test-vmbackend 
+Loading fake Cloud state from local file "vms.json"
+Missing "vms.json", generating one...
+Tip: You can tweak "vms.json"  adding VMs or changing states for next run.
 Server listening at :8080
-API
-GET /vms             -> VMs JSON          # list all VMs
-PUT /vms/launch/{id} -> Check status code # launch VM by id
-PUT /vms/stop/{id}   -> Check status code # a VM by id
-GET /vms/{id}        -> VM JSON           # inspect a VM by id
-DELETE /vms/{id}     -> Check status code # delete a VM by id
+API:
+GET     /vms[/]?                -> VMs JSON             # list All VMs
+PUT     /vms/launch/\d+         -> Check status code    # launch VM by id
+PUT     /vms/stop/\d+           -> Check status code    # stop a VM by id
+GET     /vms/\d+                -> VM JSON              # inspect a VM by id
+DELETE  /vms/\d+                -> VM JSON              # delete a VM by id
+
+<- GET /vms
 ...
 ```
 ## Test drive with CURL
@@ -91,3 +96,47 @@ $ curl -s http://localhost:8080/vms/0 |jq .
 {}
 
 ```
+# Customizing initial state
+
+Notice the output lines in the example above:
+
+```
+Loading fake Cloud state from local file "vms.json"
+Missing "vms.json", generating one...
+Tip: You can tweak "vms.json"  adding VMs or changing states for next run.
+...
+```
+
+If you run the server at leats once it will create a default `vms.json` file you can tweak to you liking. The initial contents of that file should look like the first call to the `/vms` endpoint:
+
+```json
+$ cat vms.json |jq .
+[
+  {
+    "vcpus": 1,
+    "clock": 1500,
+    "ram": 4096,
+    "storage": 128,
+    "network": 1000,
+    "state": "Stopped"
+  },
+  {
+    "vcpus": 4,
+    "clock": 3600,
+    "ram": 32768,
+    "storage": 512,
+    "network": 10000,
+    "state": "Stopped"
+  },
+  {
+    "vcpus": 2,
+    "clock": 2200,
+    "ram": 8192,
+    "storage": 256,
+    "network": 1000,
+    "state": "Stopped"
+  }
+]
+```
+
+From that you can add/remove or tweak VM entries and re-run to start from a new initial state.
