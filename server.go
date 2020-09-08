@@ -19,32 +19,36 @@ type serverHandler func(s *VMServer, w http.ResponseWriter, r *http.Request)
 
 type idHandlerFunc func(id int, w http.ResponseWriter, r *http.Request)
 
+func wrapNCompile(pattern string) *regexp.Regexp {
+	return regexp.MustCompile(fmt.Sprintf("^%v$", pattern))
+}
+
 // APISpec is the data source for API docs and mappings
 var APISpec = []struct {
 	method   string
-	path     string
+	path     *regexp.Regexp
 	bodySpec string
 	doc      string
 	handler  serverHandler
 }{
 	{
-		http.MethodGet, "/vms[/]?", "VMs JSON", "list All VMs",
+		http.MethodGet, wrapNCompile("/vms[/]?"), "VMs JSON", "list All VMs",
 		func(s *VMServer, w http.ResponseWriter, r *http.Request) { s.list(w, r) },
 	},
 	{
-		http.MethodPut, "/vms/launch/\\d+", "", "launch VM by id",
+		http.MethodPut, wrapNCompile("/vms/launch/\\d+"), "", "launch VM by id",
 		func(s *VMServer, w http.ResponseWriter, r *http.Request) { s.requestIDfor(s.launch, w, r) },
 	},
 	{
-		http.MethodPut, "/vms/stop/\\d+", "", "stop a VM by id",
+		http.MethodPut, wrapNCompile("/vms/stop/\\d+"), "", "stop a VM by id",
 		func(s *VMServer, w http.ResponseWriter, r *http.Request) { s.requestIDfor(s.stop, w, r) },
 	},
 	{
-		http.MethodGet, "/vms/\\d+", "VM JSON", "inspect a VM by id",
+		http.MethodGet, wrapNCompile("/vms/\\d+"), "VM JSON", "inspect a VM by id",
 		func(s *VMServer, w http.ResponseWriter, r *http.Request) { s.requestIDfor(s.inspect, w, r) },
 	},
 	{
-		http.MethodDelete, "/vms/\\d+", "VM JSON", "delete a VM by id",
+		http.MethodDelete, wrapNCompile("/vms/\\d+"), "VM JSON", "delete a VM by id",
 		func(s *VMServer, w http.ResponseWriter, r *http.Request) { s.requestIDfor(s.delete, w, r) },
 	},
 }
@@ -77,15 +81,11 @@ func (s *VMServer) ServeVM(w http.ResponseWriter, r *http.Request) {
 	http.Error(w, msg, http.StatusMethodNotAllowed)
 }
 
-func matches(r *http.Request, method, pathRegex string) bool {
+func matches(r *http.Request, method string, pathRegex *regexp.Regexp) bool {
 	if r.Method != method {
 		return false
 	}
-
-	pattern := fmt.Sprintf("^%v$", pathRegex)
-	matches, err := regexp.Match(pattern, []byte(r.URL.Path))
-	dieOnError(err, "Error maching %q as %q", r.URL.Path, pattern)
-	return matches
+	return pathRegex.Match([]byte(r.URL.Path))
 }
 
 func (s *VMServer) list(w http.ResponseWriter, r *http.Request) {
