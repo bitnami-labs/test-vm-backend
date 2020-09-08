@@ -36,19 +36,19 @@ var APISpec = []struct {
 		func(s *VMServer, w http.ResponseWriter, r *http.Request) { s.list(w, r) },
 	},
 	{
-		http.MethodPut, mustCompileAnchored(`/vms/launch/\\d+`), "", "launch VM by id",
+		http.MethodPut, mustCompileAnchored(`/vms/launch/\d+`), "", "launch VM by id",
 		func(s *VMServer, w http.ResponseWriter, r *http.Request) { s.requestIDfor(s.launch, w, r) },
 	},
 	{
-		http.MethodPut, mustCompileAnchored(`/vms/stop/\\d+`), "", "stop a VM by id",
+		http.MethodPut, mustCompileAnchored(`/vms/stop/\d+`), "", "stop a VM by id",
 		func(s *VMServer, w http.ResponseWriter, r *http.Request) { s.requestIDfor(s.stop, w, r) },
 	},
 	{
-		http.MethodGet, mustCompileAnchored(`/vms/\\d+`), "VM JSON", "inspect a VM by id",
+		http.MethodGet, mustCompileAnchored(`/vms/\d+`), "VM JSON", "inspect a VM by id",
 		func(s *VMServer, w http.ResponseWriter, r *http.Request) { s.requestIDfor(s.inspect, w, r) },
 	},
 	{
-		http.MethodDelete, mustCompileAnchored(`/vms/\\d+`), "VM JSON", "delete a VM by id",
+		http.MethodDelete, mustCompileAnchored(`/vms/\d+`), "VM JSON", "delete a VM by id",
 		func(s *VMServer, w http.ResponseWriter, r *http.Request) { s.requestIDfor(s.delete, w, r) },
 	},
 }
