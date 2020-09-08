@@ -91,9 +91,9 @@ func (vms VMList) clone() VMList {
 // toMap turns VMList into a map skipping empty entries (if any)
 func (vms VMList) toMap() map[int]VM {
 	hash := make(map[int]VM)
-	for index, vm := range vms {
+	for i, vm := range vms {
 		if vm.isValid() {
-			hash[index] = vm
+			hash[i] = vm
 		}
 	}
 	return hash
