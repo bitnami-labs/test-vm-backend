@@ -115,7 +115,7 @@ func (vms VMList) String() string {
 }
 
 var defaultVMList = VMList{
-	VM{
+	{
 		VCPUS:   1,       // Number of processors
 		Clock:   1500,    // Frequency of 1 processor, expressed in MHz (Megahertz)
 		RAM:     4096,    // Amount of internal memory, expressed in MB (Megabytes)
@@ -123,7 +123,7 @@ var defaultVMList = VMList{
 		Network: 1000,    // Speed of the networking device, expressed in Gb/s (Gigabits per second)
 		State:   STOPPED, // Value from within the set [Running, Stopped, Starting, Stopping]
 	},
-	VM{
+	{
 		VCPUS:   4,
 		Clock:   3600,
 		RAM:     32768,
@@ -131,7 +131,7 @@ var defaultVMList = VMList{
 		Network: 10000,
 		State:   STOPPED,
 	},
-	VM{
+	{
 		VCPUS:   2,
 		Clock:   2200,
 		RAM:     8192,
