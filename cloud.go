@@ -30,38 +30,12 @@ func (c *Cloud) Inspect(id int) VM {
 
 // Launch a VM by id
 func (c *Cloud) Launch(id int) error {
-	c.lock.Lock()
-	defer c.lock.Unlock()
-
-	vm, err := c.vm2state(id, STARTING)
-	if err != nil {
-		return err
-	}
-	c.vms[id] = vm
-	time.AfterFunc(StartDelay, func() {
-		if vm, err := vm.WithState(RUNNING); err == nil {
-			c.vms[id] = vm
-		}
-	})
-	return nil
+	return c.delayedTransition(id, STARTING, RUNNING, StartDelay)
 }
 
 // Stop a VM by id
 func (c *Cloud) Stop(id int) error {
-	c.lock.Lock()
-	defer c.lock.Unlock()
-
-	vm, err := c.vm2state(id, STOPPING)
-	if err != nil {
-		return err
-	}
-	c.vms[id] = vm
-	time.AfterFunc(StopDelay, func() {
-		if vm, err := vm.WithState(STOPPED); err == nil {
-			c.vms[id] = vm
-		}
-	})
-	return nil
+	return c.delayedTransition(id, STOPPING, STOPPED, StopDelay)
 }
 
 // Delete VM by id. Idempotent, will return true when VM is actually deleted
@@ -77,13 +51,33 @@ func (c *Cloud) Delete(id int) bool {
 	return true
 }
 
-// vm2state sets the VM identified by the given id to the given state.
-// Might fail if the VM is not found or transition requested is illegal.
-func (c *Cloud) vm2state(id int, state VMState) (VM, error) {
+// delayedTransition moves the VM identified by the given id to the final state
+// after setting it in the ongoing state the given delay has passed.
+// Uses setVMState internally to handle safe concurrent transitions.
+func (c *Cloud) delayedTransition(id int, ongoing, final VMState, delay time.Duration) error {
 	vm := c.vms.lookup(id)
 	if !vm.isValid() {
-		return VM{}, fmt.Errorf("not found VM with id %d", id)
+		return fmt.Errorf("not found VM with id %d", id)
 	}
+
+	vm, err := c.setVMState(vm, ongoing)
+	if err != nil {
+		return err
+	}
+	c.vms[id] = vm
+	time.AfterFunc(delay, func() {
+		c.setVMState(vm, final)
+	})
+	return nil
+}
+
+// setVMState sets the VM identified by the given id to the given state.
+// Might fail if the VM transition requested is illegal.
+// Do it in a locked transaction
+func (c *Cloud) setVMState(vm VM, state VMState) (VM, error) {
+	c.lock.Lock()
+	defer c.lock.Unlock()
+
 	mutatedVM, err := vm.WithState(state)
 	if err != nil {
 		return VM{}, err
