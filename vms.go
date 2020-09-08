@@ -15,13 +15,13 @@ const (
 	STOPPED VMState = "Stopped"
 
 	// STARTING VM is transitioning from Stopped to Starting in about 10 minutes
-	STARTING = "Starting"
+	STARTING VMState = "Starting"
 
 	// RUNNING VM is online
-	RUNNING = "Running"
+	RUNNING VMState = "Running"
 
 	// STOPPING VM is transitioning from Running to Stopped
-	STOPPING = "Stopping"
+	STOPPING VMState = "Stopping"
 )
 
 const (
