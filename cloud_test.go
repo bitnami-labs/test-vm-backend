@@ -14,6 +14,10 @@ const (
 	BadID = 10000
 )
 
+const (
+	expectedNotFoundMsgFmt = "not found VM with id %d"
+)
+
 func cloneDefaultVMList() VMList {
 	defaultVMListClone := make(VMList, len(defaultVMList))
 	copy(defaultVMListClone, defaultVMList)
@@ -44,8 +48,8 @@ func TestInspect(t *testing.T) {
 
 func TestBadInspect(t *testing.T) {
 	c := NewDefaultCloud()
-	var wanted VM = emptyVM
-	got := c.Inspect(BadID)
+	wanted := false
+	got := c.Inspect(BadID).isValid()
 	if got != wanted {
 		t.Fatalf("Expected %v but got %v", wanted, got)
 	}
@@ -84,7 +88,7 @@ func TestLaunch(t *testing.T) {
 
 func TestBadVMLaunch(t *testing.T) {
 	c := NewDefaultCloud()
-	wanted := fmt.Sprintf("VM with id %d not found", BadID)
+	wanted := fmt.Sprintf(expectedNotFoundMsgFmt, BadID)
 	if got := c.Launch(BadID); got.Error() != wanted {
 		t.Fatalf("Unexpected Launch VM error: %q", got)
 	}
@@ -121,7 +125,7 @@ func TestStop(t *testing.T) {
 func TestBadVMStop(t *testing.T) {
 	c := NewDefaultCloud()
 	c.vms[GoodID].State = RUNNING
-	wanted := fmt.Sprintf("VM with id %d not found", BadID)
+	wanted := fmt.Sprintf(expectedNotFoundMsgFmt, BadID)
 	if got := c.Stop(BadID); got.Error() != wanted {
 		t.Fatalf("Unexpected Stop VM error: %q", got)
 	}

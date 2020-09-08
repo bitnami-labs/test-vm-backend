@@ -48,25 +48,24 @@ var withStateErrors = []struct {
 	wanted string
 }{
 	{vm: VMInState(STOPPED), state: RUNNING,
-		wanted: `Illegal transition from "Stopped" to "Running"`},
+		wanted: `illegal transition from "Stopped" to "Running"`},
 	{vm: VMInState(STOPPED), state: STOPPING,
-		wanted: `Illegal transition from "Stopped" to "Stopping"`},
+		wanted: `illegal transition from "Stopped" to "Stopping"`},
 	{vm: VMInState(RUNNING), state: STOPPED,
-		wanted: `Illegal transition from "Running" to "Stopped"`},
+		wanted: `illegal transition from "Running" to "Stopped"`},
 	{vm: VMInState(RUNNING), state: STARTING,
-		wanted: `Illegal transition from "Running" to "Starting"`},
+		wanted: `illegal transition from "Running" to "Starting"`},
 	{vm: VMInState(STARTING), state: STOPPED,
-		wanted: `Illegal transition from "Starting" to "Stopped"`},
+		wanted: `illegal transition from "Starting" to "Stopped"`},
 	{vm: VMInState(STARTING), state: STOPPING,
-		wanted: `Illegal transition from "Starting" to "Stopping"`},
+		wanted: `illegal transition from "Starting" to "Stopping"`},
 }
 
 func TestWithStateErrors(t *testing.T) {
-	emptyVM := VM{}
 	for _, testcase := range withStateErrors {
 		vm, got := testcase.vm.WithState(testcase.state)
-		if vm != emptyVM {
-			t.Fatalf("Unexpected VM non empty value in error case %v: %v", testcase, vm)
+		if vm.isValid() {
+			t.Fatalf("Unexpected VM valid value in error case %v: %v", testcase, vm)
 		}
 		if got.Error() != testcase.wanted {
 			t.Fatalf("Expected %q but got %q", testcase.wanted, got)

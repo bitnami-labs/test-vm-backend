@@ -49,24 +49,23 @@ func dieOnError(err error, format string, args ...interface{}) {
 
 // VM is a Virtual Machine
 type VM struct {
-	VCPUS   int     `json:"vcpus"`   // Number of processors
-	Clock   float32 `json:"clock"`   // Frequency of 1 processor, expressed in MHz (Megahertz)
-	RAM     int     `json:"ram"`     // Amount of internal memory, expressed in MB (Megabytes)
-	Storage int     `json:"storage"` // Amount of persistent storage, expressed in GB (Gigabytes)
-	Network int     `json:"network"` // Network device speed in Gb/s (Gigabits per second)
-	State   VMState `json:"state"`   // Value within [Running, Stopped, Starting, Stopping]
+	VCPUS   int     `json:"vcpus,omitempty"`   // Number of processors
+	Clock   float32 `json:"clock,omitempty"`   // Frequency of 1 processor, in MHz (Megahertz)
+	RAM     int     `json:"ram,omitempty"`     // Amount of internal memory, in MB (Megabytes)
+	Storage int     `json:"storage,omitempty"` // Amount of persistent storage, in GB (Gigabytes)
+	Network int     `json:"network,omitempty"` // Network device speed in Gb/s (Gigabits per second)
+	State   VMState `json:"state,omitempty"`   // Value within [Running, Stopped, Starting, Stopping]
 }
-
-var emptyVM = VM{}
 
 // VM by default dumps itself in JSON format
 func (vm VM) String() string {
-	if vm == emptyVM {
-		return "{}"
-	}
 	vmJSON, err := json.Marshal(vm)
 	dieOnError(err, "Can't generate JSON for VM object %#v", vm)
 	return string(vmJSON)
+}
+
+func (vm VM) isValid() bool {
+	return vm != VM{}
 }
 
 // AllowedTransition lists allowed state transitions
@@ -91,7 +90,7 @@ func (vms VMList) clone() VMList {
 func (vms VMList) hashize() map[int]VM {
 	hash := make(map[int]VM)
 	for index, vm := range vms {
-		if vm != emptyVM {
+		if vm.isValid() {
 			hash[index] = vm
 		}
 	}

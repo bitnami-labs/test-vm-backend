@@ -70,21 +70,21 @@ func (c *Cloud) Delete(id int) bool {
 	c.lock.Lock()
 	defer c.lock.Unlock()
 
-	if c.vms.lookup(id) == emptyVM {
+	if !c.vms.lookup(id).isValid() {
 		return false
 	}
-	c.vms[id] = emptyVM
+	c.vms[id] = VM{}
 	return true
 }
 
 func (c *Cloud) vm2state(id int, state VMState) (VM, error) {
 	vm := c.vms.lookup(id)
-	if vm == emptyVM {
-		return emptyVM, fmt.Errorf("VM with id %d not found", id)
+	if !vm.isValid() {
+		return VM{}, fmt.Errorf("not found VM with id %d", id)
 	}
 	mutatedVM, err := vm.WithState(state)
 	if err != nil {
-		return emptyVM, err
+		return VM{}, err
 	}
 	return mutatedVM, nil
 }
