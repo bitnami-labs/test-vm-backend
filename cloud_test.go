@@ -30,28 +30,28 @@ func NewDefaultCloud() Cloud {
 
 func TestList(t *testing.T) {
 	c := NewDefaultCloud()
-	wanted := cloneDefaultVMList().String()
+	want := cloneDefaultVMList().String()
 	got := c.List().String()
-	if got != wanted {
-		t.Fatalf("Expected %q but got %q", wanted, got)
+	if got != want {
+		t.Fatalf("got: %q, wanted: %q", got, want)
 	}
 }
 
 func TestInspect(t *testing.T) {
 	c := NewDefaultCloud()
-	wanted := cloneDefaultVMList()[GoodID].String()
+	want := cloneDefaultVMList()[GoodID].String()
 	got := c.Inspect(GoodID).String()
-	if got != wanted {
-		t.Fatalf("Expected %q but got %q", wanted, got)
+	if got != want {
+		t.Fatalf("got: %q, want: %q", got, want)
 	}
 }
 
 func TestBadInspect(t *testing.T) {
 	c := NewDefaultCloud()
-	wanted := false
+	want := false
 	got := c.Inspect(BadID).isValid()
-	if got != wanted {
-		t.Fatalf("Expected %v but got %v", wanted, got)
+	if got != want {
+		t.Fatalf("got: %v, want: %v", got, want)
 	}
 }
 
@@ -71,26 +71,26 @@ func shrinkTime() {
 func TestLaunch(t *testing.T) {
 	shrinkTime()
 	c := NewDefaultCloud()
-	wanted := VMByIndexInState(t, &c, GoodID, STARTING).String()
+	want := VMByIndexInState(t, &c, GoodID, STARTING).String()
 	if err := c.Launch(GoodID); err != nil {
 		t.Fatalf("Failed to Launch VM %q: %q", GoodID, err)
 	}
-	if got := c.vms[GoodID].String(); got != wanted {
-		t.Fatalf("Expected %q but got %q", wanted, got)
+	if got := c.vms[GoodID].String(); got != want {
+		t.Fatalf("got: %q, want: %q", got, want)
 	}
 	// TODO: make this transition test reliable, it fails always on Mac tests
 	// time.Sleep(2 * StartDelay)
-	// wanted2 := VMByIndexInState(t, &c, GoodID, RUNNING).String()
+	// want2 := VMByIndexInState(t, &c, GoodID, RUNNING).String()
 	// if got2 := c.vms[GoodID].String(); got2 != wanted2 {
-	// 	t.Fatalf("Expected %q but got %q", wanted2, got2)
+	// 	t.Fatalf("got %q, want: %q", got2, want2)
 	// }
 }
 
 func TestBadVMLaunch(t *testing.T) {
 	c := NewDefaultCloud()
-	wanted := fmt.Sprintf(expectedNotFoundMsgFmt, BadID)
-	if got := c.Launch(BadID); got.Error() != wanted {
-		t.Fatalf("Unexpected Launch VM error: %q", got)
+	want := fmt.Sprintf(expectedNotFoundMsgFmt, BadID)
+	if got := c.Launch(BadID).Error(); got != want {
+		t.Fatalf("got: %q, want: %q", got, want)
 	}
 }
 
@@ -98,9 +98,9 @@ func TestBadStateLaunch(t *testing.T) {
 	c := NewDefaultCloud()
 	var badState VMState = RUNNING
 	c.vms[GoodID].State = badState
-	wanted := fmt.Sprintf("illegal transition from %q to %q", badState, STARTING)
-	if got := c.Launch(GoodID); got.Error() != wanted {
-		t.Fatalf("Unexpected Launch VM error: %q", got)
+	want := fmt.Sprintf("illegal transition from %q to %q", badState, STARTING)
+	if got := c.Launch(GoodID).Error(); got != want {
+		t.Fatalf("got: %q, want: %q", got, want)
 	}
 }
 
@@ -108,50 +108,50 @@ func TestStop(t *testing.T) {
 	shrinkTime()
 	c := NewDefaultCloud()
 	c.vms[GoodID].State = RUNNING
-	wanted := VMByIndexInState(t, &c, GoodID, STOPPING).String()
+	want := VMByIndexInState(t, &c, GoodID, STOPPING).String()
 	if err := c.Stop(GoodID); err != nil {
 		t.Fatalf("Failed to Stop VM %q: %q", GoodID, err)
 	}
-	if got := c.vms[GoodID].String(); got != wanted {
-		t.Fatalf("Expected %q but got %q", wanted, got)
+	if got := c.vms[GoodID].String(); got != want {
+		t.Fatalf("got: %q, want: %q", got, want)
 	}
 	// TODO: make this transition test reliable, it fails always on Mac tests
 	// time.Sleep(2 * StopDelay)
-	// wanted2 := VMByIndexInState(t, &c, GoodID, STOPPED).String()
-	// if got2 := c.vms[GoodID].String(); got2 != wanted2 {
-	// 	t.Fatalf("Expected %q but got %q", wanted2, got2)
+	// want2 := VMByIndexInState(t, &c, GoodID, STOPPED).String()
+	// if got2 := c.vms[GoodID].String(); got2 != want2 {
+	// 	t.Fatalf("got: %q, want: %q", got2, want2)
 	// }
 }
 func TestBadVMStop(t *testing.T) {
 	c := NewDefaultCloud()
 	c.vms[GoodID].State = RUNNING
-	wanted := fmt.Sprintf(expectedNotFoundMsgFmt, BadID)
-	if got := c.Stop(BadID); got.Error() != wanted {
-		t.Fatalf("Unexpected Stop VM error: %q", got)
+	want := fmt.Sprintf(expectedNotFoundMsgFmt, BadID)
+	if got := c.Stop(BadID).Error(); got != want {
+		t.Fatalf("got: %q, want: %q", got, want)
 	}
 }
 
 func TestBadStateStop(t *testing.T) {
 	c := NewDefaultCloud()
 	// No extra setup needed: initial state Stopped is already bad for stopping
-	wanted := fmt.Sprintf("illegal transition from %q to %q", STOPPED, STOPPING)
-	if got := c.Stop(GoodID); got == nil || got.Error() != wanted {
-		t.Fatalf("Unexpected Stop VM error: %q", got)
+	want := fmt.Sprintf("illegal transition from %q to %q", STOPPED, STOPPING)
+	if got := c.Stop(GoodID); got == nil || got.Error() != want {
+		t.Fatalf("got: %q, want: %q", got, want)
 	}
 }
 
 func TestDelete(t *testing.T) {
 	c := NewDefaultCloud()
-	wanted := true
-	if got := c.Delete(GoodID); got != wanted {
-		t.Fatalf("Expected %v but got %v", wanted, got)
+	want := true
+	if got := c.Delete(GoodID); got != want {
+		t.Fatalf("got: %v, want: %v", got, want)
 	}
 }
 
 func TestBadDelete(t *testing.T) {
 	c := NewDefaultCloud()
-	wanted := false
-	if got := c.Delete(BadID); got != wanted {
-		t.Fatalf("Expected deleted=%v but got deleted=%v", wanted, got)
+	want := false
+	if got := c.Delete(BadID); got != want {
+		t.Fatalf("got: %v, want: %v", got, want)
 	}
 }

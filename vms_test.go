@@ -15,60 +15,60 @@ func VMInState(state VMState) *VM {
 	}
 }
 
-var withStateHappyTestCases = []struct {
-	vm     *VM
-	state  VMState
-	wanted *VM
+var withStateHappyCases = []struct {
+	vm    *VM
+	state VMState
+	want  *VM
 }{
-	{vm: VMInState(STOPPED), state: STARTING, wanted: VMInState(STARTING)},
-	{vm: VMInState(STARTING), state: RUNNING, wanted: VMInState(RUNNING)},
-	{vm: VMInState(RUNNING), state: STOPPING, wanted: VMInState(STOPPING)},
-	{vm: VMInState(STOPPING), state: STOPPED, wanted: VMInState(STOPPED)},
-	{vm: VMInState(STOPPED), state: STOPPED, wanted: VMInState(STOPPED)},
-	{vm: VMInState(STARTING), state: STARTING, wanted: VMInState(STARTING)},
-	{vm: VMInState(RUNNING), state: RUNNING, wanted: VMInState(RUNNING)},
-	{vm: VMInState(STOPPING), state: STOPPING, wanted: VMInState(STOPPING)},
+	{vm: VMInState(STOPPED), state: STARTING, want: VMInState(STARTING)},
+	{vm: VMInState(STARTING), state: RUNNING, want: VMInState(RUNNING)},
+	{vm: VMInState(RUNNING), state: STOPPING, want: VMInState(STOPPING)},
+	{vm: VMInState(STOPPING), state: STOPPED, want: VMInState(STOPPED)},
+	{vm: VMInState(STOPPED), state: STOPPED, want: VMInState(STOPPED)},
+	{vm: VMInState(STARTING), state: STARTING, want: VMInState(STARTING)},
+	{vm: VMInState(RUNNING), state: RUNNING, want: VMInState(RUNNING)},
+	{vm: VMInState(STOPPING), state: STOPPING, want: VMInState(STOPPING)},
 }
 
 func TestWithStateHappyCases(t *testing.T) {
-	for _, testcase := range withStateHappyTestCases {
-		got, err := testcase.vm.WithState(testcase.state)
+	for _, tc := range withStateHappyCases {
+		got, err := tc.vm.WithState(tc.state)
 		if err != nil {
-			t.Fatalf("Unexpected error in happy case %v: %v", testcase, err)
+			t.Fatalf("Unexpected error in happy case %v: %v", tc, err)
 		}
-		if got != *testcase.wanted {
-			t.Fatalf("Expected %v but got %v", *testcase.wanted, got)
+		if got != *tc.want {
+			t.Fatalf("got: %v, want %v", got, *tc.want)
 		}
 	}
 }
 
 var withStateErrors = []struct {
-	vm     *VM
-	state  VMState
-	wanted string
+	vm    *VM
+	state VMState
+	want  string
 }{
 	{vm: VMInState(STOPPED), state: RUNNING,
-		wanted: `illegal transition from "Stopped" to "Running"`},
+		want: `illegal transition from "Stopped" to "Running"`},
 	{vm: VMInState(STOPPED), state: STOPPING,
-		wanted: `illegal transition from "Stopped" to "Stopping"`},
+		want: `illegal transition from "Stopped" to "Stopping"`},
 	{vm: VMInState(RUNNING), state: STOPPED,
-		wanted: `illegal transition from "Running" to "Stopped"`},
+		want: `illegal transition from "Running" to "Stopped"`},
 	{vm: VMInState(RUNNING), state: STARTING,
-		wanted: `illegal transition from "Running" to "Starting"`},
+		want: `illegal transition from "Running" to "Starting"`},
 	{vm: VMInState(STARTING), state: STOPPED,
-		wanted: `illegal transition from "Starting" to "Stopped"`},
+		want: `illegal transition from "Starting" to "Stopped"`},
 	{vm: VMInState(STARTING), state: STOPPING,
-		wanted: `illegal transition from "Starting" to "Stopping"`},
+		want: `illegal transition from "Starting" to "Stopping"`},
 }
 
 func TestWithStateErrors(t *testing.T) {
-	for _, testcase := range withStateErrors {
-		vm, got := testcase.vm.WithState(testcase.state)
+	for _, tc := range withStateErrors {
+		vm, got := tc.vm.WithState(tc.state)
 		if vm.isValid() {
-			t.Fatalf("Unexpected VM valid value in error case %v: %v", testcase, vm)
+			t.Fatalf("Unexpected VM valid value in error case %v: %v", tc, vm)
 		}
-		if got.Error() != testcase.wanted {
-			t.Fatalf("Expected %q but got %q", testcase.wanted, got)
+		if got.Error() != tc.want {
+			t.Fatalf("got: %q, want %q", got, tc.want)
 		}
 	}
 }
