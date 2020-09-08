@@ -88,8 +88,8 @@ func (vms VMList) clone() VMList {
 	return cloneList
 }
 
-// hashize turns VMList into a map skipping empty entries (if any)
-func (vms VMList) hashize() map[int]VM {
+// toMap turns VMList into a map skipping empty entries (if any)
+func (vms VMList) toMap() map[int]VM {
 	hash := make(map[int]VM)
 	for index, vm := range vms {
 		if vm.isValid() {
@@ -109,7 +109,7 @@ func (vms VMList) lookup(id int) VM {
 
 // String in VMList by default dumps itself in JSON format skipping empty entries
 func (vms VMList) String() string {
-	vmJSON, err := json.Marshal(vms.hashize())
+	vmJSON, err := json.Marshal(vms.toMap())
 	dieOnError(err, "Can't generate JSON for VM object %#v", vms)
 	return string(vmJSON)
 }
