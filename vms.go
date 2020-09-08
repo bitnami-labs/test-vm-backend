@@ -45,7 +45,7 @@ const VMsJSON = "vms.json"
 
 func dieOnError(err error, format string, args ...interface{}) {
 	if err != nil {
-		log.Fatalf("%v: %q\n", fmt.Sprintf(format, args...), err)
+		log.Fatalf("%s: %v\n", fmt.Sprintf(format, args...), err)
 	}
 }
 
