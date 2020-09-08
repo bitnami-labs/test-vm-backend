@@ -92,7 +92,7 @@ func (s *VMServer) list(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, fmt.Sprintf("%v not allowed", r.Method), http.StatusMethodNotAllowed)
 		return
 	}
-	w.Write([]byte(s.vmm.List().String()))
+	fmt.Fprint(w, s.vmm.List().String())
 }
 
 func (s *VMServer) requestIDfor(f idHandlerFunc, w http.ResponseWriter, r *http.Request) {
