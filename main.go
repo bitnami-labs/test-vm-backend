@@ -5,33 +5,40 @@ import (
 	"errors"
 	"fmt"
 	"io/ioutil"
+	"log"
 	"net/http"
 	"os"
 )
 
 // loadVMs loads the VM list from a JSON file (VMS_JSON)
-func loadVMs() VMList {
+func loadVMs() (VMList, error) {
 	fmt.Printf("Loading fake Cloud state from local file %q\n", VMsJSON)
 	_, err := os.Stat(VMsJSON)
 	if errors.Is(err, os.ErrNotExist) {
 		fmt.Printf("Missing %q, generating one...\n", VMsJSON)
 		saveVMs(defaultVMList)
 		fmt.Printf("Tip: You can tweak %q  adding VMs or changing states for next run.\n", VMsJSON)
-	} else {
-		dieOnError(err, "Error stating %q", VMsJSON)
+	} else if err != nil {
+		return nil, fmt.Errorf("Error stating %q: %v", VMsJSON, err)
 	}
 	f, err := os.Open(VMsJSON)
-	dieOnError(err, "Error opening %q", VMsJSON)
+	if err != nil {
+		return nil, fmt.Errorf("Error opening %q: %v", VMsJSON, err)
+	}
 
 	defer f.Close()
 	vmsJSON, err := ioutil.ReadAll(f)
-	dieOnError(err, "Error reading from %q", VMsJSON)
+	if err != nil {
+		return nil, fmt.Errorf("Error reading %q: %v", VMsJSON, err)
+	}
 
 	vms := make(VMList, 0)
 	err = json.Unmarshal(vmsJSON, &vms)
-	dieOnError(err, "Error JSON-parsing from %q", VMsJSON)
+	if err != nil {
+		return nil, fmt.Errorf("Error JSON-parsing %q: %v", VMsJSON, err)
+	}
 
-	return vms
+	return vms, nil
 }
 
 // saveVMs saves the VM list to a JSON file (VMS_JSON)
@@ -44,11 +51,13 @@ func saveVMs(vms VMList) {
 }
 
 func main() {
-	vms := VMServer{Cloud{vms: loadVMs()}, ":8080"}
+	vms, err := loadVMs()
+	dieOnError(err, "Error loading VMs initial state")
+	server := VMServer{Cloud{vms: vms}, ":8080"}
 
-	fmt.Printf("Server listening at %v\n", vms.address)
-	fmt.Println(vms.APIDoc())
-	http.HandleFunc("/", vms.ServeVM)
+	fmt.Printf("Server listening at %v\n", server.address)
+	fmt.Println(server.APIDoc())
+	http.HandleFunc("/", server.ServeVM)
 
-	log.Fatal(http.ListenAndServe(vms.address, nil))
+	log.Fatal(http.ListenAndServe(server.address, nil))
 }
