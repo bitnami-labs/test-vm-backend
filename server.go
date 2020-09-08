@@ -2,11 +2,11 @@ package main
 
 import (
 	"fmt"
+	"io"
 	"net/http"
 	"path"
 	"regexp"
 	"strconv"
-	"strings"
 )
 
 // VMServer is a http.Handler of VM REST requests
@@ -20,7 +20,7 @@ type serverHandler func(s *VMServer, w http.ResponseWriter, r *http.Request)
 type idHandlerFunc func(id int, w http.ResponseWriter, r *http.Request)
 
 func mustCompileAnchored(pattern string) *regexp.Regexp {
-	return regexp.MustCompile(fmt.Sprintf("^%v$", pattern))
+	return regexp.MustCompile(fmt.Sprintf("^%s$", pattern))
 }
 
 // APISpec is the data source for API docs and mappings
@@ -53,19 +53,17 @@ var APISpec = []struct {
 	},
 }
 
-// APIDoc dumps the API simple doc
-func (s *VMServer) APIDoc() string {
-	var sb strings.Builder
-	sb.WriteString("API:\n")
+// WriteAPIDoc dumps the API simple doc onto the given writer
+func (s *VMServer) WriteAPIDoc(w io.Writer) {
+	fmt.Fprintln(w, "API:")
 	for _, endpoint := range APISpec {
 		bodySpec := endpoint.bodySpec
 		if bodySpec == "" {
 			bodySpec = "Check status code"
 		}
-		sb.WriteString(fmt.Sprintf("%v\t%-20v\t-> %-20v\t# %v\n",
-			endpoint.method, endpoint.path, bodySpec, endpoint.doc))
+		fmt.Fprintf(w, "%v\t%-20v\t-> %-20v\t# %v\n",
+			endpoint.method, endpoint.path, bodySpec, endpoint.doc)
 	}
-	return sb.String()
 }
 
 // ServeVM dispatchs the request to the correct method follwing the API schema

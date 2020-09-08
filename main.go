@@ -65,7 +65,7 @@ func mainE() error {
 	server := VMServer{Cloud{vms: vms}, ":8080"}
 
 	fmt.Printf("Server listening at %v\n", server.address)
-	fmt.Println(server.APIDoc())
+	server.WriteAPIDoc(os.Stdout)
 	http.HandleFunc("/", server.ServeVM)
 	return http.ListenAndServe(server.address, nil)
 }
