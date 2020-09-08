@@ -57,14 +57,21 @@ func saveVMs(vms VMList) error {
 	return nil
 }
 
-func main() {
+func mainE() error {
 	vms, err := loadVMs()
-	dieOnError(err, "Error loading VMs initial state")
+	if err != nil {
+		return fmt.Errorf("error loading VMs initial state: %v", err)
+	}
 	server := VMServer{Cloud{vms: vms}, ":8080"}
 
 	fmt.Printf("Server listening at %v\n", server.address)
 	fmt.Println(server.APIDoc())
 	http.HandleFunc("/", server.ServeVM)
+	return http.ListenAndServe(server.address, nil)
+}
 
-	log.Fatal(http.ListenAndServe(server.address, nil))
+func main() {
+	if err := mainE(); err != nil {
+		log.Fatal(err)
+	}
 }
