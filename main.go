@@ -50,5 +50,5 @@ func main() {
 	fmt.Println(vms.APIDoc())
 	http.HandleFunc("/", vms.ServeVM)
 
-	dieOnError(http.ListenAndServe(vms.address, nil), "Error listening on %v", vms.address)
+	log.Fatal(http.ListenAndServe(vms.address, nil))
 }
