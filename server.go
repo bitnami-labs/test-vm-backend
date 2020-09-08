@@ -108,6 +108,7 @@ func (s *VMServer) requestIDfor(f idHandlerFunc, w http.ResponseWriter, r *http.
 func (s *VMServer) launch(id int, w http.ResponseWriter, r *http.Request) {
 	if err := s.vmm.Launch(id); err != nil {
 		http.Error(w, err.Error(), http.StatusNotFound)
+		return
 	}
 }
 
