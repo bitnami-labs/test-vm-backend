@@ -3,7 +3,7 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	"os"
+	"log"
 	"time"
 )
 
@@ -43,8 +43,7 @@ const VMsJSON = "vms.json"
 
 func dieOnError(err error, format string, args ...interface{}) {
 	if err != nil {
-		fmt.Printf("%v: %q\n", fmt.Sprintf(format, args...), err)
-		os.Exit(-1)
+		log.Fatalf("%v: %q\n", fmt.Sprintf(format, args...), err)
 	}
 }
 
