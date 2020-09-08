@@ -32,11 +32,13 @@ const (
 	DefaultStopDelay = 5 * time.Second
 )
 
-// StartDelay for launch operations (not a constant so unit test can change it)
-var StartDelay = DefaultStartDelay
+var (
+	// StartDelay for launch operations (not a constant so unit test can change it)
+	StartDelay = DefaultStartDelay
 
-// StopDelay for stop operations (not a constant so unit test can change it)
-var StopDelay = DefaultStopDelay
+	// StopDelay for stop operations (not a constant so unit test can change it)
+	StopDelay = DefaultStopDelay
+)
 
 // VMsJSON filename where to store initial VMs state list
 const VMsJSON = "vms.json"
