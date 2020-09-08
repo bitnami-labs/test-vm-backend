@@ -84,7 +84,7 @@ func matches(r *http.Request, method string, pathRegex *regexp.Regexp) bool {
 	if r.Method != method {
 		return false
 	}
-	return pathRegex.Match([]byte(r.URL.Path))
+	return pathRegex.MatchString(r.URL.Path)
 }
 
 func (s *VMServer) list(w http.ResponseWriter, r *http.Request) {
