@@ -100,11 +100,11 @@ func (vms VMList) toMap() map[int]VM {
 }
 
 // lookup a VM returning the empty VM if out of bounds or not found
-func (vms VMList) lookup(id int) VM {
+func (vms VMList) lookup(id int) (VM, bool) {
 	if id < 0 || id > (len(vms)-1) {
-		return VM{}
+		return VM{}, false
 	}
-	return vms[id]
+	return vms[id], true
 }
 
 // String in VMList by default dumps itself in JSON format skipping empty entries

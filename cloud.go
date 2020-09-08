@@ -25,7 +25,8 @@ func (c *Cloud) Inspect(id int) VM {
 	c.lock.RLock()
 	defer c.lock.RUnlock()
 
-	return c.vms.lookup(id)
+	vm, _ := c.vms.lookup(id)
+	return vm
 }
 
 // Launch a VM by id
@@ -44,7 +45,8 @@ func (c *Cloud) Delete(id int) bool {
 	c.lock.Lock()
 	defer c.lock.Unlock()
 
-	if !c.vms.lookup(id).isValid() {
+	_, found := c.vms.lookup(id)
+	if !found {
 		return false
 	}
 	c.vms[id] = VM{}
@@ -55,8 +57,8 @@ func (c *Cloud) Delete(id int) bool {
 // after setting it in the ongoing state the given delay has passed.
 // Uses setVMState internally to handle safe concurrent transitions.
 func (c *Cloud) delayedTransition(id int, ongoing, final VMState, delay time.Duration) error {
-	vm := c.vms.lookup(id)
-	if !vm.isValid() {
+	vm, found := c.vms.lookup(id)
+	if !found {
 		return fmt.Errorf("not found VM with id %d", id)
 	}
 
