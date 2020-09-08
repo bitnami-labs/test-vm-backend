@@ -19,7 +19,7 @@ type serverHandler func(s *VMServer, w http.ResponseWriter, r *http.Request)
 
 type idHandlerFunc func(id int, w http.ResponseWriter, r *http.Request)
 
-func wrapNCompile(pattern string) *regexp.Regexp {
+func mustCompileAnchored(pattern string) *regexp.Regexp {
 	return regexp.MustCompile(fmt.Sprintf("^%v$", pattern))
 }
 
