@@ -77,6 +77,8 @@ func (c *Cloud) Delete(id int) bool {
 	return true
 }
 
+// vm2state sets the VM identified by the given id to the given state.
+// Might fail if the VM is not found or transition requested is illegal.
 func (c *Cloud) vm2state(id int, state VMState) (VM, error) {
 	vm := c.vms.lookup(id)
 	if !vm.isValid() {
