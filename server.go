@@ -32,23 +32,23 @@ var APISpec = []struct {
 	handler  serverHandler
 }{
 	{
-		http.MethodGet, wrapNCompile("/vms[/]?"), "VMs JSON", "list All VMs",
+		http.MethodGet, mustCompileAnchored(`/vms[/]?`), "VMs JSON", "list All VMs",
 		func(s *VMServer, w http.ResponseWriter, r *http.Request) { s.list(w, r) },
 	},
 	{
-		http.MethodPut, wrapNCompile("/vms/launch/\\d+"), "", "launch VM by id",
+		http.MethodPut, mustCompileAnchored(`/vms/launch/\\d+`), "", "launch VM by id",
 		func(s *VMServer, w http.ResponseWriter, r *http.Request) { s.requestIDfor(s.launch, w, r) },
 	},
 	{
-		http.MethodPut, wrapNCompile("/vms/stop/\\d+"), "", "stop a VM by id",
+		http.MethodPut, mustCompileAnchored(`/vms/stop/\\d+`), "", "stop a VM by id",
 		func(s *VMServer, w http.ResponseWriter, r *http.Request) { s.requestIDfor(s.stop, w, r) },
 	},
 	{
-		http.MethodGet, wrapNCompile("/vms/\\d+"), "VM JSON", "inspect a VM by id",
+		http.MethodGet, mustCompileAnchored(`/vms/\\d+`), "VM JSON", "inspect a VM by id",
 		func(s *VMServer, w http.ResponseWriter, r *http.Request) { s.requestIDfor(s.inspect, w, r) },
 	},
 	{
-		http.MethodDelete, wrapNCompile("/vms/\\d+"), "VM JSON", "delete a VM by id",
+		http.MethodDelete, mustCompileAnchored(`/vms/\\d+`), "VM JSON", "delete a VM by id",
 		func(s *VMServer, w http.ResponseWriter, r *http.Request) { s.requestIDfor(s.delete, w, r) },
 	},
 }
