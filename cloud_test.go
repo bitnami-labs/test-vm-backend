@@ -94,7 +94,7 @@ func TestBadStateLaunch(t *testing.T) {
 	c := NewDefaultCloud()
 	var badState VMState = RUNNING
 	c.vms[GoodID].State = badState
-	wanted := fmt.Sprintf("Illegal transition from %q to %q", badState, STARTING)
+	wanted := fmt.Sprintf("illegal transition from %q to %q", badState, STARTING)
 	if got := c.Launch(GoodID); got.Error() != wanted {
 		t.Fatalf("Unexpected Launch VM error: %q", got)
 	}
@@ -130,7 +130,7 @@ func TestBadVMStop(t *testing.T) {
 func TestBadStateStop(t *testing.T) {
 	c := NewDefaultCloud()
 	// No extra setup needed: initial state Stopped is already bad for stopping
-	wanted := fmt.Sprintf("Illegal transition from %q to %q", STOPPED, STOPPING)
+	wanted := fmt.Sprintf("illegal transition from %q to %q", STOPPED, STOPPING)
 	if got := c.Stop(GoodID); got == nil || got.Error() != wanted {
 		t.Fatalf("Unexpected Stop VM error: %q", got)
 	}

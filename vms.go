@@ -147,7 +147,7 @@ func (vm VM) WithState(state VMState) (VM, error) {
 		return vm, nil // NOP
 	}
 	if AllowedTransition[vm.State] != state {
-		return VM{}, fmt.Errorf("Illegal transition from %q to %q", vm.State, state)
+		return VM{}, fmt.Errorf("illegal transition from %q to %q", vm.State, state)
 	}
 	vm.State = state
 	return vm, nil

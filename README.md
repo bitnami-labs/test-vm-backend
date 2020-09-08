@@ -90,7 +90,7 @@ $ curl -s -X PUT http://localhost:8080/vms/stop/0
 $ curl -s -X POST http://localhost:8080/vms/stop/0 
 POST /vms/stop/0 not allowed
 $ curl -s -X PUT http://localhost:8080/vms/stop/0 
-Illegal transition from "Stopped" to "Stopping"
+illegal transition from "Stopped" to "Stopping"
 $ curl -s -X DELETE http://localhost:8080/vms/0 
 $ curl -s http://localhost:8080/vms/0 |jq .
 {}
