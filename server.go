@@ -115,6 +115,7 @@ func (s *VMServer) launch(id int, w http.ResponseWriter, r *http.Request) {
 func (s *VMServer) stop(id int, w http.ResponseWriter, r *http.Request) {
 	if err := s.vmm.Stop(id); err != nil {
 		http.Error(w, err.Error(), http.StatusNotFound)
+		return
 	}
 }
 
