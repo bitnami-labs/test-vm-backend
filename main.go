@@ -12,14 +12,14 @@ import (
 
 // loadVMs loads the VM list from a JSON file (VMS_JSON)
 func loadVMs() (VMList, error) {
-	fmt.Printf("Loading fake Cloud state from local file %q\n", VMsJSON)
+	log.Printf("Loading fake Cloud state from local file %q", VMsJSON)
 	_, err := os.Stat(VMsJSON)
 	if errors.Is(err, os.ErrNotExist) {
-		fmt.Printf("Missing %q, generating one...\n", VMsJSON)
+		log.Printf("Missing %q, generating one...", VMsJSON)
 		if err := saveVMs(defaultVMList); err != nil {
 			return nil, fmt.Errorf("error generating default %q: %v", VMsJSON, err)
 		}
-		fmt.Printf("Tip: You can tweak %q adding VMs or changing states for next run.\n", VMsJSON)
+		log.Printf("Tip: You can tweak %q adding VMs or changing states for next run.", VMsJSON)
 	} else if err != nil {
 		return nil, fmt.Errorf("error stating %q: %v", VMsJSON, err)
 	}
@@ -64,7 +64,7 @@ func mainE() error {
 	}
 	server := VMServer{Cloud{vms: vms}, ":8080"}
 
-	fmt.Printf("Server listening at %v\n", server.address)
+	log.Printf("Server listening at %v", server.address)
 	server.WriteAPIDoc(os.Stdout)
 	http.HandleFunc("/", server.ServeVM)
 	return http.ListenAndServe(server.address, nil)

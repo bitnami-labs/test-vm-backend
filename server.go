@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"io"
+	"log"
 	"net/http"
 	"path"
 	"regexp"
@@ -68,7 +69,7 @@ func (s *VMServer) WriteAPIDoc(w io.Writer) {
 
 // ServeVM dispatchs the request to the correct method follwing the API schema
 func (s *VMServer) ServeVM(w http.ResponseWriter, r *http.Request) {
-	fmt.Printf("<- %v %v\n", r.Method, r.URL.Path)
+	log.Printf("<- %v %v", r.Method, r.URL.Path)
 	for _, endpoint := range APISpec {
 		if matches(r, endpoint.method, endpoint.path) {
 			endpoint.handler(s, w, r)
