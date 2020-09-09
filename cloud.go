@@ -70,11 +70,14 @@ func (c *Cloud) Delete(id int) bool {
 // Uses setVMState internally to handle a safe concurrent delayed transition.
 func (c *Cloud) delayedTransition(id int, state VMState, delay time.Duration) DoneChannel {
 	done := make(DoneChannel)
+	log.Printf("Starting timer to set %d to %v after %v", id, state, delay)
 	time.AfterFunc(delay, func() {
+		log.Printf("FIRED timer to set %d to %v", id, state)
 		if err := c.setVMState(id, state); err != nil {
 			log.Println(err)
 		}
-		close(done) // signal we are done
+		close(done) // signal delayed transition completion
+		log.Printf("DONE timer: %s", c.List().String())
 	})
 	return done
 }
