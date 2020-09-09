@@ -11,12 +11,12 @@ import (
 )
 
 // loadVMs loads the VM list from a JSON file (VMS_JSON)
-func loadVMs() (VMList, error) {
+func loadVMs() (VMs, error) {
 	log.Printf("Loading fake Cloud state from local file %q", VMsJSON)
 	_, err := os.Stat(VMsJSON)
 	if errors.Is(err, os.ErrNotExist) {
 		log.Printf("Missing %q, generating one...", VMsJSON)
-		if err := saveVMs(defaultVMList); err != nil {
+		if err := saveVMs(defaultVMs); err != nil {
 			return nil, fmt.Errorf("error generating default %q: %v", VMsJSON, err)
 		}
 		log.Printf("Tip: You can tweak %q adding VMs or changing states for next run.", VMsJSON)
@@ -34,7 +34,7 @@ func loadVMs() (VMList, error) {
 		return nil, fmt.Errorf("error reading %q: %v", VMsJSON, err)
 	}
 
-	vms := make(VMList, 0)
+	vms := make(VMs, 0)
 	err = json.Unmarshal(vmsJSON, &vms)
 	if err != nil {
 		return nil, fmt.Errorf("error JSON-parsing %q: %v", VMsJSON, err)
@@ -44,7 +44,7 @@ func loadVMs() (VMList, error) {
 }
 
 // saveVMs saves the VM list to a JSON file (VMS_JSON)
-func saveVMs(vms VMList) error {
+func saveVMs(vms VMs) error {
 	vmsJSON, err := json.Marshal(vms)
 	if err != nil {
 		return fmt.Errorf("error writing JSON for %q: %v", VMsJSON, err)

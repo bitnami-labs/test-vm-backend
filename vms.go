@@ -66,79 +66,12 @@ func (vm VM) String() string {
 	return string(vmJSON)
 }
 
-func (vm VM) isValid() bool {
-	return vm != VM{}
-}
-
 // AllowedTransition lists allowed state transitions
 var AllowedTransition = map[VMState]VMState{
 	STOPPED:  STARTING,
 	STARTING: RUNNING,
 	RUNNING:  STOPPING,
 	STOPPING: STOPPED,
-}
-
-// VMList defines a list of VMs with attached methods
-type VMList []VM
-
-// clone returns a deep clone of the list, useful for snapshots
-func (vms VMList) clone() VMList {
-	cloneList := make(VMList, len(vms))
-	copy(cloneList, vms)
-	return cloneList
-}
-
-// toMap turns VMList into a map skipping empty entries (if any)
-func (vms VMList) toMap() map[int]VM {
-	hash := make(map[int]VM)
-	for i, vm := range vms {
-		if vm.isValid() {
-			hash[i] = vm
-		}
-	}
-	return hash
-}
-
-// lookup a VM returning the empty VM if out of bounds or not found
-func (vms VMList) lookup(id int) (VM, bool) {
-	if id < 0 || id > (len(vms)-1) {
-		return VM{}, false
-	}
-	return vms[id], true
-}
-
-// String in VMList by default dumps itself in JSON format skipping empty entries
-func (vms VMList) String() string {
-	vmJSON, err := json.Marshal(vms.toMap())
-	dieOnError(err, "Can't generate JSON for VM object %#v", vms)
-	return string(vmJSON)
-}
-
-var defaultVMList = VMList{
-	{
-		VCPUS:   1,       // Number of processors
-		Clock:   1500,    // Frequency of 1 processor, expressed in MHz (Megahertz)
-		RAM:     4096,    // Amount of internal memory, expressed in MB (Megabytes)
-		Storage: 128,     // Amount of internal space available for storage, expressed in GB (Gigabytes)
-		Network: 1000,    // Speed of the networking device, expressed in Gb/s (Gigabits per second)
-		State:   STOPPED, // Value from within the set [Running, Stopped, Starting, Stopping]
-	},
-	{
-		VCPUS:   4,
-		Clock:   3600,
-		RAM:     32768,
-		Storage: 512,
-		Network: 10000,
-		State:   STOPPED,
-	},
-	{
-		VCPUS:   2,
-		Clock:   2200,
-		RAM:     8192,
-		Storage: 256,
-		Network: 1000,
-		State:   STOPPED,
-	},
 }
 
 // WithState returns a VM on the requested end state or an error,
@@ -152,4 +85,50 @@ func (vm VM) WithState(state VMState) (VM, error) {
 	}
 	vm.State = state
 	return vm, nil
+}
+
+// VMs defines a map of VMs with attached methods
+type VMs map[int]VM
+
+// clone returns a deep clone of the list, useful for snapshots
+func (vms VMs) clone() VMs {
+	cloneList := make(VMs, len(vms))
+	for k, v := range vms {
+		cloneList[k] = v
+	}
+	return cloneList
+}
+
+// String in VMs by default dumps itself in JSON format skipping empty entries
+func (vms VMs) String() string {
+	vmJSON, err := json.Marshal(vms)
+	dieOnError(err, "Can't generate JSON for VM object %#v", vms)
+	return string(vmJSON)
+}
+
+var defaultVMs = VMs{
+	0: {
+		VCPUS:   1,       // Number of processors
+		Clock:   1500,    // Frequency of 1 processor, expressed in MHz (Megahertz)
+		RAM:     4096,    // Amount of internal memory, expressed in MB (Megabytes)
+		Storage: 128,     // Amount of internal space available for storage, expressed in GB (Gigabytes)
+		Network: 1000,    // Speed of the networking device, expressed in Gb/s (Gigabits per second)
+		State:   STOPPED, // Value from within the set [Running, Stopped, Starting, Stopping]
+	},
+	1: {
+		VCPUS:   4,
+		Clock:   3600,
+		RAM:     32768,
+		Storage: 512,
+		Network: 10000,
+		State:   STOPPED,
+	},
+	2: {
+		VCPUS:   2,
+		Clock:   2200,
+		RAM:     8192,
+		Storage: 256,
+		Network: 1000,
+		State:   STOPPED,
+	},
 }

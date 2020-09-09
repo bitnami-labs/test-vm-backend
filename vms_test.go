@@ -64,7 +64,7 @@ var withStateErrors = []struct {
 func TestWithStateErrors(t *testing.T) {
 	for _, tc := range withStateErrors {
 		vm, got := tc.vm.WithState(tc.state)
-		if vm.isValid() {
+		if (vm != VM{}) {
 			t.Fatalf("Unexpected VM valid value in error case %v: %v", tc, vm)
 		}
 		if got.Error() != tc.want {

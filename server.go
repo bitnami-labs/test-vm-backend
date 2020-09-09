@@ -105,14 +105,14 @@ func (s *VMServer) requestIDfor(f idHandlerFunc, w http.ResponseWriter, r *http.
 }
 
 func (s *VMServer) launch(id int, w http.ResponseWriter, r *http.Request) {
-	if err := s.vmm.Launch(id); err != nil {
+	if _, err := s.vmm.Launch(id); err != nil {
 		http.Error(w, err.Error(), http.StatusNotFound)
 		return
 	}
 }
 
 func (s *VMServer) stop(id int, w http.ResponseWriter, r *http.Request) {
-	if err := s.vmm.Stop(id); err != nil {
+	if _, err := s.vmm.Stop(id); err != nil {
 		http.Error(w, err.Error(), http.StatusNotFound)
 		return
 	}
@@ -123,5 +123,8 @@ func (s *VMServer) delete(id int, w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *VMServer) inspect(id int, w http.ResponseWriter, r *http.Request) {
-	w.Write([]byte(s.vmm.Inspect(id).String()))
+	vm, _ := s.vmm.Inspect(id)
+	if _, err := fmt.Fprint(w, vm); err != nil {
+		log.Print(err)
+	}
 }
