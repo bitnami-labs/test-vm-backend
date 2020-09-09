@@ -104,7 +104,7 @@ func TestLaunch(t *testing.T) {
 		t.Fatalf("got: %s, want: %s", got, want)
 	}
 	// Wait and test 2nd transition
-	if err := waitDone(done, 2*StartDelay); err != nil {
+	if err := waitDone(done, 10*StartDelay); err != nil {
 		t.Fatal(err)
 	}
 	want2, err := copyInState(&c, GoodID, RUNNING)
@@ -153,7 +153,7 @@ func TestStop(t *testing.T) {
 		t.Fatalf("got: %v, want: %v", got, want)
 	}
 	// Wait and test 2nd transition
-	if err := waitDone(done, 2*StopDelay); err != nil {
+	if err := waitDone(done, 10*StopDelay); err != nil {
 		t.Fatal(err)
 	}
 	want2, err := copyInState(&c, GoodID, STOPPED)
