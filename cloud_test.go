@@ -49,8 +49,8 @@ func shrinkTime() {
 	StopDelay = 5 * time.Millisecond
 }
 
-// waitDelayedAction waits for a done channel to finish or a timeout to occur
-func waitDelayedAction(done DoneChannel, timeout time.Duration) error {
+// waitDone waits for a done channel to finish or a timeout to occur
+func waitDone(done DoneChannel, timeout time.Duration) error {
 	timeoutChannel := time.After(timeout)
 	select {
 	case <-done:
@@ -104,7 +104,7 @@ func TestLaunch(t *testing.T) {
 		t.Fatalf("got: %s, want: %s", got, want)
 	}
 	// Wait and test 2nd transition
-	if err := waitDelayedAction(done, 20*StartDelay); err != nil {
+	if err := waitDone(done, 2*StartDelay); err != nil {
 		t.Fatal(err)
 	}
 	want2, err := copyInState(&c, GoodID, RUNNING)
@@ -153,7 +153,7 @@ func TestStop(t *testing.T) {
 		t.Fatalf("got: %v, want: %v", got, want)
 	}
 	// Wait and test 2nd transition
-	if err := waitDelayedAction(done, 2*StopDelay); err != nil {
+	if err := waitDone(done, 2*StopDelay); err != nil {
 		t.Fatal(err)
 	}
 	want2, err := copyInState(&c, GoodID, STOPPED)
