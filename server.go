@@ -119,12 +119,14 @@ func (s *VMServer) stop(id int, w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *VMServer) delete(id int, w http.ResponseWriter, r *http.Request) {
-	s.vmm.Delete(id)
+	if err := s.vmm.Delete(id); err != nil {
+		http.Error(w, err.Error(), http.StatusNotAcceptable)
+	}
 }
 
 func (s *VMServer) inspect(id int, w http.ResponseWriter, r *http.Request) {
 	vm, _ := s.vmm.Inspect(id)
 	if _, err := fmt.Fprint(w, vm); err != nil {
-		log.Print(err)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
 }
