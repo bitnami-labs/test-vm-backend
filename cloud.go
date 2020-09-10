@@ -14,10 +14,6 @@ type Cloud struct {
 	vms  VMs
 }
 
-// DoneChannel to signal completion of a delayed action
-// beware, it can timeout!
-type DoneChannel chan struct{}
-
 // List the VMs handled under this Cloud
 func (c *Cloud) List() VMs {
 	c.lock.RLock()
@@ -35,16 +31,20 @@ func (c *Cloud) Inspect(id int) (VM, bool) {
 	return vm, found
 }
 
-// Launch a VM by id
-func (c *Cloud) Launch(id int) (DoneChannel, error) {
+// Launch a VM by id.
+// The return includes a channel to optionally check completion of the launch
+// process, apart from a possible error.
+func (c *Cloud) Launch(id int) (chan struct{}, error) {
 	if err := c.setVMState(id, STARTING); err != nil {
 		return nil, err
 	}
 	return c.delayedTransition(id, RUNNING, StartDelay), nil
 }
 
-// Stop a VM by id
-func (c *Cloud) Stop(id int) (DoneChannel, error) {
+// Stop a VM by id.
+// The return includes a channel to optionally check completion of the stop
+// process, apart from a possible error.
+func (c *Cloud) Stop(id int) (chan struct{}, error) {
 	if err := c.setVMState(id, STOPPING); err != nil {
 		return nil, err
 	}
@@ -68,8 +68,8 @@ func (c *Cloud) Delete(id int) bool {
 // delayedTransition set ups a timer in the background to move the VM
 // identified by the given id to state after the given delay has passed.
 // Uses setVMState internally to handle a safe concurrent delayed transition.
-func (c *Cloud) delayedTransition(id int, state VMState, delay time.Duration) DoneChannel {
-	done := make(DoneChannel)
+func (c *Cloud) delayedTransition(id int, state VMState, delay time.Duration) chan struct{} {
+	done := make(chan struct{})
 	time.AfterFunc(delay, func() {
 		if err := c.setVMState(id, state); err != nil {
 			log.Println(err)

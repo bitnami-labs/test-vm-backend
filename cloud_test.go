@@ -50,7 +50,7 @@ func shrinkTime() {
 }
 
 // waitDone waits for a done channel to finish or a timeout to occur
-func waitDone(done DoneChannel, timeout time.Duration) error {
+func waitDone(done chan struct{}, timeout time.Duration) error {
 	timeoutChannel := time.After(timeout)
 	select {
 	case <-done:
