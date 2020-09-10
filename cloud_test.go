@@ -80,11 +80,8 @@ func TestInspect(t *testing.T) {
 
 func TestBadInspect(t *testing.T) {
 	c := NewDefaultCloud()
-	want := false
-	vm, _ := c.Inspect(BadID)
-	got := vm != VM{}
-	if got != want {
-		t.Fatalf("got: %v, want: %v", got, want)
+	if _, found := c.Inspect(BadID); found == true {
+		t.Fatalf("found: %v, want: false", found)
 	}
 }
 
@@ -185,9 +182,8 @@ func TestBadStateStop(t *testing.T) {
 
 func TestDelete(t *testing.T) {
 	c := NewDefaultCloud()
-	want := error(nil)
-	if got := c.Delete(GoodID); got != want {
-		t.Fatalf("got: %v, want: %v", got, want)
+	if err := c.Delete(GoodID); err != nil {
+		t.Fatal(err)
 	}
 }
 
