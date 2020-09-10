@@ -185,7 +185,7 @@ func TestBadStateStop(t *testing.T) {
 
 func TestDelete(t *testing.T) {
 	c := NewDefaultCloud()
-	want := true
+	want := error(nil)
 	if got := c.Delete(GoodID); got != want {
 		t.Fatalf("got: %v, want: %v", got, want)
 	}
@@ -193,8 +193,29 @@ func TestDelete(t *testing.T) {
 
 func TestBadDelete(t *testing.T) {
 	c := NewDefaultCloud()
-	want := false
-	if got := c.Delete(BadID); got != want {
-		t.Fatalf("got: %v, want: %v", got, want)
+	want := fmt.Sprintf("delete error: not found VM %d", BadID)
+	if got := c.Delete(BadID); got == nil || got.Error() != want {
+		t.Fatalf("got: %q, want: %q", got, want)
+	}
+}
+
+func TestReDelete(t *testing.T) {
+	c := NewDefaultCloud()
+	if err := c.Delete(GoodID); err != nil {
+		t.Fatalf("Unexpected deletion error: %v", err)
+	}
+	want := fmt.Sprintf("delete error: not found VM %d", GoodID)
+	if got := c.Delete(GoodID); got == nil || got.Error() != want {
+		t.Fatalf("got: %q, want: %q", got, want)
+	}
+}
+
+func TestBadStateDelete(t *testing.T) {
+	c := NewDefaultCloud()
+	badState := RUNNING // not allowed to delete in this state
+	forceState(&c, GoodID, badState)
+	want := fmt.Sprintf("delete error: VM %d must be in state %v for deletion but it is %v", GoodID, STOPPED, badState)
+	if got := c.Delete(GoodID); got == nil || got.Error() != want {
+		t.Fatalf("got: %q, want: %q", got, want)
 	}
 }

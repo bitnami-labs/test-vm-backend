@@ -51,18 +51,21 @@ func (c *Cloud) Stop(id int) (chan struct{}, error) {
 	return c.delayedTransition(id, STOPPED, StopDelay), nil
 }
 
-// Delete VM by id. Idempotent, will return true when VM is actually deleted
-// and false if it was already not there.
-func (c *Cloud) Delete(id int) bool {
+// Delete VM by id.
+// An error is returned if the VM is missing or not in the Stopped state.
+func (c *Cloud) Delete(id int) error {
 	c.lock.Lock()
 	defer c.lock.Unlock()
 
-	_, found := c.vms[id]
+	vm, found := c.vms[id]
 	if !found {
-		return false
+		return fmt.Errorf("delete error: not found VM %d", id)
 	}
-	c.vms[id] = VM{}
-	return true
+	if vm.State != STOPPED {
+		return fmt.Errorf("delete error: VM %d must be in state %v for deletion but it is %v", id, STOPPED, vm.State)
+	}
+	delete(c.vms, id)
+	return nil
 }
 
 // delayedTransition set ups a timer in the background to move the VM
