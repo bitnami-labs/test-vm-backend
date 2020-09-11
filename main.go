@@ -10,6 +10,11 @@ import (
 	"os"
 )
 
+// Version of the program.
+// "Development" by default, but released binaries will have versions such as:
+// '2020.09.10.0'
+var Version = "Development"
+
 // loadVMs loads the VM list from a JSON file (VMS_JSON)
 func loadVMs() (VMs, error) {
 	log.Printf("Loading fake Cloud state from local file %q", VMsJSON)
@@ -58,6 +63,7 @@ func saveVMs(vms VMs) error {
 }
 
 func mainE() error {
+	log.Printf("Test-VMBackend version %s", Version)
 	vms, err := loadVMs()
 	if err != nil {
 		return fmt.Errorf("error loading VMs initial state: %v", err)
