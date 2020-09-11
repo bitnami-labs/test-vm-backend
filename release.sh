@@ -47,9 +47,14 @@ for os in ${archs}; do
   echo "${out}"
 done
 
-echo "Zip binaries"
+echo "Zip binaries & sources"
 pushd "${kbdir}/releases/"
 zip -r "${binary}-${version}.zip" "${binary}-${version}"/*
+popd
+pushd ..
+zip -r "${kbdir}/releases/${binary}-${version}.zip" \
+  "./${binary}" -x '*.git*' -x "*release.sh" -x "*next-version.sh" \
+  -x "*vms.json" -x "*test-vmbackend" -x "*.vscode*"
 popd
 
 echo "Pointing latest to ${version}"
