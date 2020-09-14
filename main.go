@@ -6,11 +6,14 @@ package main
 import (
 	"encoding/json"
 	"errors"
+	"flag"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"log"
 	"net/http"
 	"os"
+	"strings"
 )
 
 // Version of the program.
@@ -65,18 +68,37 @@ func saveVMs(vms VMs) error {
 	return nil
 }
 
+func printDefaultsTo(w io.Writer, fs *flag.FlagSet) {
+	defer func(saved io.Writer) {
+		fs.SetOutput(saved)
+	}(fs.Output())
+	fs.SetOutput(w)
+	fs.PrintDefaults()
+}
+
 func mainE() error {
 	log.Printf("Test-VMBackend version %s", Version)
+	var address string
+	flag.StringVar(&address, "address", ":8080", "Listen address for the backend")
+	flag.Parse()
 	vms, err := loadVMs()
 	if err != nil {
 		return fmt.Errorf("error loading VMs initial state: %v", err)
 	}
-	server := VMServer{Cloud{vms: vms}, ":8080"}
+	server := VMServer{Cloud{vms: vms}, address}
 
 	log.Printf("Server listening at %v", server.address)
 	server.WriteAPIDoc(os.Stdout)
 	http.HandleFunc("/", server.ServeVM)
-	return http.ListenAndServe(server.address, nil)
+	err = http.ListenAndServe(server.address, nil)
+	if err != nil && strings.Contains(err.Error(), "address already in use") {
+		var sb strings.Builder
+		fmt.Fprintln(&sb, err.Error())
+		fmt.Fprintf(&sb, "^ You can avoid binding issues by using the address flag:\n")
+		printDefaultsTo(&sb, flag.CommandLine)
+		return fmt.Errorf(sb.String())
+	}
+	return err
 }
 
 func main() {

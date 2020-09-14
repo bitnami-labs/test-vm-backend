@@ -14,21 +14,41 @@ The user just downloads the binary of the right architecture and runs it.
 Launch the server on a terminal:
 
 ```bash
-$ go build && ./test-vmbackend 
-Loading fake Cloud state from local file "vms.json"
-Missing "vms.json", generating one...
-Tip: You can tweak "vms.json"  adding VMs or changing states for next run.
-Server listening at :8080
+$ go build && ./test-vmbackend
+2020/09/11 18:43:42 Test-VMBackend version Development
+2020/09/11 18:43:42 Loading fake Cloud state from local file "vms.json"
+2020/09/11 18:43:42 Missing "vms.json", generating one...
+2020/09/11 18:43:42 Tip: You can tweak "vms.json" adding VMs or changing states for next run.
+2020/09/11 18:43:42 Server listening at :8080
 API:
-GET     /vms[/]?                -> VMs JSON             # list All VMs
-PUT     /vms/launch/\d+         -> Check status code    # launch VM by id
-PUT     /vms/stop/\d+           -> Check status code    # stop a VM by id
-GET     /vms/\d+                -> VM JSON              # inspect a VM by id
-DELETE  /vms/\d+                -> VM JSON              # delete a VM by id
+GET     ^/vms[/]?$              -> VMs JSON             # list All VMs
+PUT     ^/vms/launch/\d+$       -> Check status code    # launch VM by id
+PUT     ^/vms/stop/\d+$         -> Check status code    # stop a VM by id
+GET     ^/vms/\d+$              -> VM JSON              # inspect a VM by id
+DELETE  ^/vms/\d+$              -> VM JSON              # delete a VM by id
+
 
 <- GET /vms
 ...
 ```
+
+### Run on another port or address
+
+Use the `-address` flag:
+
+```
+$ ./test-vmbackend -address "0.0.0.0:6060"
+2020/09/11 12:44:54 Test-VMBackend version Development
+2020/09/11 12:44:54 Loading fake Cloud state from local file "vms.json"
+2020/09/11 12:44:54 Server listening at 0.0.0.0:6060
+API:
+GET     ^/vms[/]?$              -> VMs JSON             # list All VMs
+PUT     ^/vms/launch/\d+$       -> Check status code    # launch VM by id
+PUT     ^/vms/stop/\d+$         -> Check status code    # stop a VM by id
+GET     ^/vms/\d+$              -> VM JSON              # inspect a VM by id
+DELETE  ^/vms/\d+$              -> VM JSON              # delete a VM by id
+```
+
 ## Test drive with CURL
 
 To test with curl, go to another terminal and write:
