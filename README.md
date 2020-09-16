@@ -14,19 +14,18 @@ The user just downloads the binary of the right architecture and runs it.
 Launch the server on a terminal:
 
 ```bash
-$ go build && ./test-vmbackend
-2020/09/11 18:43:42 Test-VMBackend version Development
-2020/09/11 18:43:42 Loading fake Cloud state from local file "vms.json"
-2020/09/11 18:43:42 Missing "vms.json", generating one...
-2020/09/11 18:43:42 Tip: You can tweak "vms.json" adding VMs or changing states for next run.
-2020/09/11 18:43:42 Server listening at :8080
+$ go build && ./test-vmbackend 
+2020/09/15 19:53:56 Test-VMBackend version Development
+2020/09/15 19:53:56 Loading fake Cloud state from local file "vms.json"
+2020/09/15 19:53:56 Missing "vms.json", generating one...
+2020/09/15 19:53:56 Tip: You can tweak "vms.json" adding VMs or changing states for next run.
+2020/09/15 19:53:56 Server listening at :8080
 API:
-GET     ^/vms[/]?$              -> VMs JSON             # list All VMs
-PUT     ^/vms/launch/\d+$       -> Check status code    # launch VM by id
-PUT     ^/vms/stop/\d+$         -> Check status code    # stop a VM by id
-GET     ^/vms/\d+$              -> VM JSON              # inspect a VM by id
-DELETE  ^/vms/\d+$              -> VM JSON              # delete a VM by id
-
+GET     /vms                    -> VMs JSON             # list All VMs
+PUT     /vms/{vm_id}/launch     -> Check status code    # launch VM by id
+PUT     /vms/{vm_id}/stop       -> Check status code    # stop VM by id
+GET     /vms/{vm_id}            -> VM JSON              # inspect a VM by id
+DELETE  /vms/{vm_id}            -> Check status code    # delete a VM by id
 
 <- GET /vms
 ...
@@ -38,15 +37,15 @@ Use the `-address` flag:
 
 ```
 $ ./test-vmbackend -address "0.0.0.0:6060"
-2020/09/11 12:44:54 Test-VMBackend version Development
-2020/09/11 12:44:54 Loading fake Cloud state from local file "vms.json"
-2020/09/11 12:44:54 Server listening at 0.0.0.0:6060
+2020/09/15 19:43:54 Test-VMBackend version Development
+2020/09/15 19:43:54 Loading fake Cloud state from local file "vms.json"
+2020/09/15 19:43:54 Server listening at 0.0.0.0:6060
 API:
-GET     ^/vms[/]?$              -> VMs JSON             # list All VMs
-PUT     ^/vms/launch/\d+$       -> Check status code    # launch VM by id
-PUT     ^/vms/stop/\d+$         -> Check status code    # stop a VM by id
-GET     ^/vms/\d+$              -> VM JSON              # inspect a VM by id
-DELETE  ^/vms/\d+$              -> VM JSON              # delete a VM by id
+GET	/vms                	-> VMs JSON            	# list All VMs
+PUT	/vms/{vm_id}/launch 	-> Check status code   	# launch VM by id
+PUT	/vms/{vm_id}/stop   	-> Check status code   	# stop VM by id
+GET	/vms/{vm_id}        	-> VM JSON             	# inspect a VM by id
+DELETE	/vms/{vm_id}        	-> Check status code   	# delete a VM by id
 ```
 
 ## Test drive with CURL
@@ -103,19 +102,55 @@ $ curl -s http://localhost:8080/vms/0 |jq .
   "state": "Stopped"
 }
 
-$ curl -s -X PUT http://localhost:8080/vms/launch/0 
+$ curl -s -X PUT http://localhost:8080/vms/0/launch
 $ 
 
-$ curl -s -X PUT http://localhost:8080/vms/stop/0 
-$ curl -s -X POST http://localhost:8080/vms/stop/0 
-POST /vms/stop/0 not allowed
-$ curl -s -X PUT http://localhost:8080/vms/stop/0 
+$ curl -s -X PUT http://localhost:8080/vms/0/stop
+$ curl -s -X PUT http://localhost:8080/vms/0/stop
 illegal transition from "Stopped" to "Stopping"
-$ curl -s -X DELETE http://localhost:8080/vms/0 
-$ curl -s http://localhost:8080/vms/0 |jq .
+$ 
+
+$ curl -s -X DELETE http://localhost:8080/vms/0
+$ curl -s -X PUT http://localhost:8080/vms/0/stop
+not found VM with id 0
+$ curl -s http://localhost:8080/vms/0
 {}
+```
+
+### Demotest
+
+You can run `demotest.sh` for a quick happy path only test drive:
 
 ```
+$ ./demotest.sh 
+Expects test-vmbackend running on default port: 8080
+GET http://localhost:8080/vms
+{"0":{"vcpus":1,"clock":1500,"ram":4096,"storage":128,"network":1000,"state":"Stopped"},"1":{"vcpus":4,"clock":3600,"ram":32768,"storage":512,"network":10000,"state":"Stopped"},"2":{"vcpus":2,"clock":2200,"ram":8192,"storage":256,"network":1000,"state":"Stopped"}}
+GET http://localhost:8080/vms/0
+{"vcpus":1,"clock":1500,"ram":4096,"storage":128,"network":1000,"state":"Stopped"}
+PUT http://localhost:8080/vms/0/launch
+
+GET http://localhost:8080/vms/0
+{"vcpus":1,"clock":1500,"ram":4096,"storage":128,"network":1000,"state":"Starting"}
+Wait for started...
+GET http://localhost:8080/vms/0
+{"vcpus":1,"clock":1500,"ram":4096,"storage":128,"network":1000,"state":"Running"}
+PUT http://localhost:8080/vms/0/stop
+
+GET http://localhost:8080/vms/0
+{"vcpus":1,"clock":1500,"ram":4096,"storage":128,"network":1000,"state":"Stopping"}
+Wait for stopped
+GET http://localhost:8080/vms/0
+{"vcpus":1,"clock":1500,"ram":4096,"storage":128,"network":1000,"state":"Stopped"}
+DELETE http://localhost:8080/vms/0
+
+GET http://localhost:8080/vms
+{"1":{"vcpus":4,"clock":3600,"ram":32768,"storage":512,"network":10000,"state":"Stopped"},"2":{"vcpus":2,"clock":2200,"ram":8192,"storage":256,"network":1000,"state":"Stopped"}}
+Demotest: OK/PASS
+```
+
+Demotest expects the backend just launched to work, from initial state.
+
 # Customizing initial state
 
 Notice the output lines in the example above:
@@ -127,7 +162,7 @@ Tip: You can tweak "vms.json"  adding VMs or changing states for next run.
 ...
 ```
 
-If you run the server at leats once it will create a default `vms.json` file you can tweak to you liking. The initial contents of that file should look like the first call to the `/vms` endpoint:
+If you run the server at least once it will create a default `vms.json` file you can tweak to you liking. The initial contents of that file should look like the first call to the `/vms` endpoint:
 
 ```json
 $ cat vms.json |jq .

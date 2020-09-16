@@ -11,6 +11,7 @@ import (
 	"path"
 	"regexp"
 	"strconv"
+	"strings"
 )
 
 // VMServer is a http.Handler of VM REST requests
@@ -27,33 +28,76 @@ func mustCompileAnchored(pattern string) *regexp.Regexp {
 	return regexp.MustCompile(fmt.Sprintf("^%s$", pattern))
 }
 
-// APISpec is the data source for API docs and mappings
-var APISpec = []struct {
-	method   string
-	path     *regexp.Regexp
-	bodySpec string
-	doc      string
-	handler  serverHandler
-}{
+// MethodSpec defines a single method on an entrypoint
+type MethodSpec struct {
+	Method   string
+	BodySpec string
+	Doc      string
+	Handler  serverHandler
+}
+
+// EndpointSpec defined a path endpoint and all its methods
+type EndpointSpec struct {
+	DisplayPath string
+	Path        *regexp.Regexp
+	Methods     []MethodSpec
+}
+
+// APISpec specifies endpoint paths and their implemented methods
+var APISpec = []EndpointSpec{
 	{
-		http.MethodGet, mustCompileAnchored(`/vms[/]?`), "VMs JSON", "list All VMs",
-		func(s *VMServer, w http.ResponseWriter, r *http.Request) { s.list(w, r) },
+		DisplayPath: "/vms",
+		Path:        mustCompileAnchored(`/vms[/]?`),
+		Methods: []MethodSpec{
+			{
+				http.MethodGet, "VMs JSON", "list All VMs",
+				func(s *VMServer, w http.ResponseWriter, r *http.Request) {
+					s.list(w, r)
+				},
+			},
+		},
 	},
 	{
-		http.MethodPut, mustCompileAnchored(`/vms/launch/\d+`), "", "launch VM by id",
-		func(s *VMServer, w http.ResponseWriter, r *http.Request) { s.requestIDfor(s.launch, w, r) },
+		DisplayPath: "/vms/{vm_id}/launch",
+		Path:        mustCompileAnchored(`/vms/\d+/launch[/]?`),
+		Methods: []MethodSpec{
+			{
+				http.MethodPut, "", "launch VM by id",
+				func(s *VMServer, w http.ResponseWriter, r *http.Request) {
+					s.requestIDfor(s.launch, 2, w, r)
+				},
+			},
+		},
 	},
 	{
-		http.MethodPut, mustCompileAnchored(`/vms/stop/\d+`), "", "stop a VM by id",
-		func(s *VMServer, w http.ResponseWriter, r *http.Request) { s.requestIDfor(s.stop, w, r) },
+		DisplayPath: "/vms/{vm_id}/stop",
+		Path:        mustCompileAnchored(`/vms/\d+/stop[/]?`),
+		Methods: []MethodSpec{
+			{
+				http.MethodPut, "", "stop VM by id",
+				func(s *VMServer, w http.ResponseWriter, r *http.Request) {
+					s.requestIDfor(s.stop, 2, w, r)
+				},
+			},
+		},
 	},
 	{
-		http.MethodGet, mustCompileAnchored(`/vms/\d+`), "VM JSON", "inspect a VM by id",
-		func(s *VMServer, w http.ResponseWriter, r *http.Request) { s.requestIDfor(s.inspect, w, r) },
-	},
-	{
-		http.MethodDelete, mustCompileAnchored(`/vms/\d+`), "VM JSON", "delete a VM by id",
-		func(s *VMServer, w http.ResponseWriter, r *http.Request) { s.requestIDfor(s.delete, w, r) },
+		DisplayPath: "/vms/{vm_id}",
+		Path:        mustCompileAnchored(`/vms/\d+`),
+		Methods: []MethodSpec{
+			{
+				http.MethodGet, "VM JSON", "inspect a VM by id",
+				func(s *VMServer, w http.ResponseWriter, r *http.Request) {
+					s.requestIDfor(s.inspect, 2, w, r)
+				},
+			},
+			{
+				http.MethodDelete, "", "delete a VM by id",
+				func(s *VMServer, w http.ResponseWriter, r *http.Request) {
+					s.requestIDfor(s.delete, 2, w, r)
+				},
+			},
+		},
 	},
 }
 
@@ -61,12 +105,14 @@ var APISpec = []struct {
 func (s *VMServer) WriteAPIDoc(w io.Writer) {
 	fmt.Fprintln(w, "API:")
 	for _, endpoint := range APISpec {
-		bodySpec := endpoint.bodySpec
-		if bodySpec == "" {
-			bodySpec = "Check status code"
+		for _, m := range endpoint.Methods {
+			bodySpec := m.BodySpec
+			if bodySpec == "" {
+				bodySpec = "Check status code"
+			}
+			fmt.Fprintf(w, "%v\t%-20v\t-> %-20v\t# %v\n",
+				m.Method, endpoint.DisplayPath, bodySpec, m.Doc)
 		}
-		fmt.Fprintf(w, "%v\t%-20v\t-> %-20v\t# %v\n",
-			endpoint.method, endpoint.path, bodySpec, endpoint.doc)
 	}
 }
 
@@ -74,9 +120,13 @@ func (s *VMServer) WriteAPIDoc(w io.Writer) {
 func (s *VMServer) ServeVM(w http.ResponseWriter, r *http.Request) {
 	log.Printf("<- %v %v", r.Method, r.URL.Path)
 	for _, endpoint := range APISpec {
-		if matches(r, endpoint.method, endpoint.path) {
-			endpoint.handler(s, w, r)
-			return
+		if endpoint.Path.MatchString(r.URL.Path) {
+			for _, m := range endpoint.Methods {
+				if r.Method == m.Method {
+					m.Handler(s, w, r)
+					return
+				}
+			}
 		}
 	}
 	msg := fmt.Sprintf("%v %v not allowed", r.Method, r.URL.Path)
@@ -98,8 +148,9 @@ func (s *VMServer) list(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprint(w, s.vmm.List().String())
 }
 
-func (s *VMServer) requestIDfor(f idHandlerFunc, w http.ResponseWriter, r *http.Request) {
-	id, err := strconv.Atoi(path.Base(r.URL.Path))
+func (s *VMServer) requestIDfor(f idHandlerFunc, pos int, w http.ResponseWriter, r *http.Request) {
+	pathParts := strings.Split(r.URL.Path, "/")
+	id, err := strconv.Atoi(path.Base(pathParts[pos]))
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
