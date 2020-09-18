@@ -5,16 +5,27 @@ Hassle free for candidates, just use the binaries provided and no need to setup 
 
 # End user experience
 
-The code in this repo compiles to a binary for Linux, Mac or Windows (or all of them a the same time).
+The code in this repo compiles to a binaries for Linux, Mac or Windows. You get a ZIP file with all those binaries in a root folder (`./test-vmbackend-{version}/`), and the source code in another (`./test-vmbackend/`).
 
-The user just downloads the binary of the right architecture and runs it.
+Just pick the binary of the right architecture and run it. Unless you want to build from sources.
+
+# Building from sources
+
+You need to have [Go installed locally](https://golang.org/doc/install) beforehand. Be sure it is Go 1.14 or 1.15 as those are the versions the source code has been tested with.
+
+Once Go is installed locally just do:
+
+```
+$ cd test-vmbackend # if you were not already in the source folder.
+$ go build
+```
 
 # Sample usage
 
 Launch the server on a terminal:
 
 ```bash
-$ go build && ./test-vmbackend 
+$ ./test-vmbackend 
 2020/09/15 19:53:56 Test-VMBackend version Development
 2020/09/15 19:53:56 Loading fake Cloud state from local file "vms.json"
 2020/09/15 19:53:56 Missing "vms.json", generating one...
