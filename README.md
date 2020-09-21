@@ -20,12 +20,22 @@ $ cd test-vmbackend # if you were not already in the source folder.
 $ go build
 ```
 
+# Run in Docker
+
+From within the `test-vmbackend` folder with the `Dockerfile` just do:
+
+```
+./run_in_docker.sh
+```
+
+Parameters are accepted just as if that was a regular binary invocation.
+
 # Sample usage
 
 Launch the server on a terminal:
 
 ```bash
-$ ./test-vmbackend 
+$ ./test-vmbackend # or ./run_in_docker.sh
 2020/09/15 19:53:56 Test-VMBackend version Development
 2020/09/15 19:53:56 Loading fake Cloud state from local file "vms.json"
 2020/09/15 19:53:56 Missing "vms.json", generating one...
@@ -57,6 +67,14 @@ PUT	/vms/{vm_id}/launch 	-> Check status code   	# launch VM by id
 PUT	/vms/{vm_id}/stop   	-> Check status code   	# stop VM by id
 GET	/vms/{vm_id}        	-> VM JSON             	# inspect a VM by id
 DELETE	/vms/{vm_id}        	-> Check status code   	# delete a VM by id
+```
+
+Same works for the docker invocation:
+```
+$ ./run_in_docker.sh --address=:6060
+...
+2020/09/17 21:23:04 Server listening at :6060
+...
 ```
 
 ## Test drive with CURL
