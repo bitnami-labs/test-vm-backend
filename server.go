@@ -16,8 +16,7 @@ import (
 
 // VMServer is a http.Handler of VM REST requests
 type VMServer struct {
-	vmm     Cloud
-	address string
+	vmm Cloud
 }
 
 type serverHandler func(s *VMServer, w http.ResponseWriter, r *http.Request)
@@ -101,6 +100,11 @@ var APISpec = []EndpointSpec{
 	},
 }
 
+// NewVMServer returns a new VM server
+func NewVMServer(vms VMs) *VMServer {
+	return &VMServer{Cloud{vms: vms}}
+}
+
 // WriteAPIDoc dumps the API simple doc onto the given writer
 func (s *VMServer) WriteAPIDoc(w io.Writer) {
 	fmt.Fprintln(w, "API:")
@@ -116,8 +120,8 @@ func (s *VMServer) WriteAPIDoc(w io.Writer) {
 	}
 }
 
-// ServeVM dispatchs the request to the correct method follwing the API schema
-func (s *VMServer) ServeVM(w http.ResponseWriter, r *http.Request) {
+// ServeHTTP dispatchs the request to the correct method follwing the API schema
+func (s *VMServer) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	log.Printf("<- %v %v", r.Method, r.URL.Path)
 	for _, endpoint := range APISpec {
 		if endpoint.Path.MatchString(r.URL.Path) {

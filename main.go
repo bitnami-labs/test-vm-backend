@@ -76,21 +76,61 @@ func printDefaultsTo(w io.Writer, fs *flag.FlagSet) {
 	fs.PrintDefaults()
 }
 
+func dirMustExist(path string) error {
+	info, err := os.Stat(path)
+	if err != nil {
+		return err
+	}
+	if !info.IsDir() {
+		fmt.Errorf("path %q is not a directory", path)
+	}
+	return nil
+}
+
+func setupOptionalUIFileServer(uiFolder string) (http.Handler, error) {
+	if uiFolder == "" {
+		log.Printf("No UI folder given. Not serving any static files.")
+		return nil, nil
+	}
+	err := dirMustExist(uiFolder)
+	if err != nil {
+		return nil, err
+	}
+	// setup UI Fileserver
+	log.Printf("Serving static files for the UI at %q", uiFolder)
+	return http.FileServer(http.Dir(uiFolder)), nil
+}
+
+func rootHandler(fileServer http.Handler, apiServer http.Handler) http.Handler {
+	if fileServer != nil {
+		rootHandler := http.NewServeMux()
+		rootHandler.Handle("/ui/", http.StripPrefix("/ui/", fileServer))
+		rootHandler.Handle("/vms/", apiServer)
+		return rootHandler
+	}
+	return apiServer
+}
+
 func mainE() error {
 	log.Printf("Test-VMBackend version %s", Version)
 	var address string
+	var uiFolder string
 	flag.StringVar(&address, "address", ":8080", "Listen address for the backend")
+	flag.StringVar(&uiFolder, "uiFolder", "", "Directory to serve UI files from")
 	flag.Parse()
 	vms, err := loadVMs()
 	if err != nil {
 		return fmt.Errorf("error loading VMs initial state: %v", err)
 	}
-	server := VMServer{Cloud{vms: vms}, address}
-
-	log.Printf("Server listening at %v", server.address)
+	server := NewVMServer(vms)
 	server.WriteAPIDoc(os.Stdout)
-	http.HandleFunc("/", server.ServeVM)
-	err = http.ListenAndServe(server.address, nil)
+	fileServer, err := setupOptionalUIFileServer(uiFolder)
+	if err != nil {
+		return fmt.Errorf("error setting up ui fileserver: %v", err)
+	}
+	http.Handle("/", rootHandler(fileServer, server))
+	log.Printf("Server listening at %v", address)
+	err = http.ListenAndServe(address, nil)
 	if err != nil && strings.Contains(err.Error(), "address already in use") {
 		var sb strings.Builder
 		fmt.Fprintln(&sb, err.Error())

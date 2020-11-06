@@ -30,4 +30,6 @@ call GET http://localhost:${port}/vms/0
 call DELETE http://localhost:${port}/vms/0
 call GET http://localhost:${port}/vms
 
+call GET http://localhost:${port}/ui/vms.html
+
 echo "Demotest: OK/PASS"
