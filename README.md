@@ -35,42 +35,49 @@ Parameters are accepted just as if that was a regular binary invocation.
 Launch the server on a terminal:
 
 ~~~bash
-$ ./test-vmbackend # or ./run_in_docker.sh
+$ ./test-vmbackend # or...
+
+$ ./run_in_docker.sh
 Sending build context to Docker daemon  9.282MB
 ...
 Successfully tagged test-vmbackend:latest
-2020/11/01 18:32:49 Test-VMBackend version Development
-2020/11/01 18:32:49 Loading fake Cloud state from local file "vms.json"
-2020/11/01 18:32:49 Missing "vms.json", generating one...
-2020/11/01 18:32:49 Tip: You can tweak "vms.json" adding VMs or changing states for next run.
+2020/11/10 09:32:07 Test-VMBackend version Development
+2020/11/10 09:32:07 Loading fake Cloud state from local file "vms.json"
 API:
-GET     /vms                    -> VMs JSON             # list All VMs
-PUT     /vms/{vm_id}/launch     -> Check status code    # launch VM by id
-PUT     /vms/{vm_id}/stop       -> Check status code    # stop VM by id
-GET     /vms/{vm_id}            -> VM JSON              # inspect a VM by id
-DELETE  /vms/{vm_id}            -> Check status code    # delete a VM by id
-2020/11/01 18:32:49 No UI folder given. Not serving any static files.
-2020/11/01 18:32:49 Server listening at :8080
-
+GET	    /vms                	-> VMs JSON            	# list All VMs
+PUT	    /vms/{vm_id}/launch 	-> Check status code   	# launch VM by id
+PUT	    /vms/{vm_id}/stop   	-> Check status code   	# stop VM by id
+GET	    /vms/{vm_id}        	-> VM JSON             	# inspect a VM by id
+DELETE	/vms/{vm_id}        	-> Check status code   	# delete a VM by id
+2020/11/10 09:32:07 No UI folder given. Not serving any static files.
+2020/11/10 09:32:07 Unlike a real production service this API accepts:
+- Any Origin on CORS requests.
+- Preflight OPTIONS request with any headers.
+2020/11/10 09:32:07 Server listening at :8080
 <- GET /vms
 ...
 ~~~
 
 ## Run on another port or address
 
-Use the `-address` flag:
+Use the `--address` flag:
 
 ~~~bash
 $ ./test-vmbackend --address "0.0.0.0:6060"
-2020/09/15 19:43:54 Test-VMBackend version Development
-2020/09/15 19:43:54 Loading fake Cloud state from local file "vms.json"
-2020/09/15 19:43:54 Server listening at 0.0.0.0:6060
+2020/11/10 09:36:13 Test-VMBackend version Development
+2020/11/10 09:36:13 Loading fake Cloud state from local file "vms.json"
 API:
-GET	/vms                	-> VMs JSON            	# list All VMs
-PUT	/vms/{vm_id}/launch 	-> Check status code   	# launch VM by id
-PUT	/vms/{vm_id}/stop   	-> Check status code   	# stop VM by id
-GET	/vms/{vm_id}        	-> VM JSON             	# inspect a VM by id
-DELETE	/vms/{vm_id}        	-> Check status code   	# delete a VM by id
+GET	    /vms                -> VMs JSON            	# list All VMs
+PUT	    /vms/{vm_id}/launch -> Check status code   	# launch VM by id
+PUT	    /vms/{vm_id}/stop   -> Check status code   	# stop VM by id
+GET	    /vms/{vm_id}        -> VM JSON             	# inspect a VM by id
+DELETE	/vms/{vm_id}        -> Check status code   	# delete a VM by id
+2020/11/10 09:36:13 No UI folder given. Not serving any static files.
+2020/11/10 09:36:13 Unlike a real production service this API accepts:
+- Any Origin on CORS requests.
+- Preflight OPTIONS request with any headers.
+2020/11/10 09:36:13 Server listening at :6060
+
 ~~~
 
 Same works for the docker invocation:
@@ -80,6 +87,29 @@ $ ./run_in_docker.sh --address=:6060
 2020/09/17 21:23:04 Server listening at :6060
 ...
 ~~~
+
+#### VM data & units
+
+Each VM JSON looks like this:
+
+~~~json
+{
+  "vcpus": 1,
+  "clock": 1500,
+  "ram": 4096,
+  "storage": 128,
+  "network": 1000,
+  "state": "Running"
+}
+~~~
+
+Units:
+- `vcpus` is a integer number of virtual CPU cores.
+- `clock` is measured in  `Mhz`.
+- `ram` is `MiB`.
+- `storage` is `GiB`.
+- `network` is `Gbps`.
+- `state` is one of `"Stopped"`, `"Starting"`, `"Running"`, `"Stopping"`.
 
 ## Testing
 
@@ -188,9 +218,23 @@ Demotest: OK/PASS
 
 Demotest expects the backend just launched to work, from initial state.
 
+## CORS bypass
+
+This backend is intended as a quick tool to help develop a frontend quickly.
+
+Developers may chose to have the code running in the browser call the API directly. If the code was loaded form a different process, the origin domain will differ and [the browser will send CORS headers](https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS).
+
+Production APIs usually do not need to handle CORS requests because are rarely accessed directly from a browser:
+- Most of the time a load-balancer or a reverse proxy will reroute traffic from to a web ui or API as needed, all under the same domain.
+- Or the WebApp backend will resend the API request itself on behalf o the browser code.
+
+To make things simpler for the frontend deployment, this server bypasses CORS issues by allowing any requesting `Origin` and supporting pre-flight `OPTIONS` requests that allow any requested headers.
+
+Needless to say this is not a safe setup for production, but **this is not a production-ready server**.
+
 ## Serving a simple UI from a local folder
 
-If the Frontend consists mostly on code running on the browser directly, it might be handy to serve the frontend files from this same backend.
+If the Frontend consists mostly on code running on the browser directly, it might be handy to serve the frontend files as static files from this same backend.
 
 That way the browser will not see the frontend being loaded from a domain, and then its code using an API from another domain. Otherwise the setup would cause Cross Origin Resource Sharing errors.
 
@@ -203,13 +247,7 @@ To that end the `test-vmbackend` accepts `string` parameter `--uiFolder` so that
 ~~~bash
 $ ./test-vmbackend --uiFolder=./ui/
 2020/11/01 10:51:27 Test-VMBackend version Development
-2020/11/01 10:51:27 Loading fake Cloud state from local file "vms.json"
-API:
-GET     /vms                    -> VMs JSON             # list All VMs
-PUT     /vms/{vm_id}/launch     -> Check status code    # launch VM by id
-PUT     /vms/{vm_id}/stop       -> Check status code    # stop VM by id
-GET     /vms/{vm_id}            -> VM JSON              # inspect a VM by id
-DELETE  /vms/{vm_id}            -> Check status code    # delete a VM by id
+...
 2020/11/01 10:51:27 Serving static files for the UI at "./ui/"
 ~~~
 
@@ -239,11 +277,7 @@ $ curl http://localhost:8080/ui/vms.html
 </html>
 ~~~
 
-**This feature is totally optional**. It is only offered as the simplest possible option for the Frontend to avoid browser CORS errors. In fact, by default, when uiFolder is not set or set to empty no static files are served.
-
-But if the Frontend is implemented as a full fledged webapp, with a server side such as Ruby On Rails, Java or similar, other setups might make more sense:
-- A Webserver such as Nginx could be used to reverse-proxy requests to the API process of the webapp depending on the request endpoint.
-- The Webapp server side could be tasked with making the API calls on behalf of the browser side code.
+**This feature is totally optional**. In fact, by default, when uiFolder is not set or set to empty no static files are served.
 
 ## Customizing initial state
 

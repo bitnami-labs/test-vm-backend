@@ -35,11 +35,14 @@ type MethodSpec struct {
 	Handler  serverHandler
 }
 
+// MethodSpecs makes up a list of Method Specifications
+type MethodSpecs []MethodSpec
+
 // EndpointSpec defined a path endpoint and all its methods
 type EndpointSpec struct {
 	DisplayPath string
 	Path        *regexp.Regexp
-	Methods     []MethodSpec
+	Methods     MethodSpecs
 }
 
 // APISpec specifies endpoint paths and their implemented methods
@@ -100,6 +103,15 @@ var APISpec = []EndpointSpec{
 	},
 }
 
+// Names returns the list of methods names in a MethodSpecs list
+func (ms MethodSpecs) Names() []string {
+	names := make([]string, 0, len(ms))
+	for _, m := range ms {
+		names = append(names, m.Method)
+	}
+	return names
+}
+
 // NewVMServer returns a new VM server
 func NewVMServer(vms VMs) *VMServer {
 	return &VMServer{Cloud{vms: vms}}
@@ -123,13 +135,21 @@ func (s *VMServer) WriteAPIDoc(w io.Writer) {
 // ServeHTTP dispatchs the request to the correct method follwing the API schema
 func (s *VMServer) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	log.Printf("<- %v %v", r.Method, r.URL.Path)
+	prepareCORSHeaders(w, r)
 	for _, endpoint := range APISpec {
 		if endpoint.Path.MatchString(r.URL.Path) {
 			for _, m := range endpoint.Methods {
 				if r.Method == m.Method {
 					m.Handler(s, w, r)
+					if m.BodySpec == "" {
+						w.WriteHeader(http.StatusNoContent)
+					}
 					return
 				}
+			}
+			if r.Method == "OPTIONS" {
+				preflightReply(w, r, endpoint.Methods.Names())
+				return
 			}
 		}
 	}

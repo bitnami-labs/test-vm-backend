@@ -129,6 +129,10 @@ func mainE() error {
 		return fmt.Errorf("error setting up ui fileserver: %v", err)
 	}
 	http.Handle("/", rootHandler(fileServer, server))
+	CORSMessage := "Unlike a real production service this API accepts:\n"
+	CORSMessage += "- Any Origin on CORS requests.\n"
+	CORSMessage += "- Preflight OPTIONS request with any headers."
+	log.Printf(CORSMessage)
 	log.Printf("Server listening at %v", address)
 	err = http.ListenAndServe(address, nil)
 	if err != nil && strings.Contains(err.Error(), "address already in use") {
