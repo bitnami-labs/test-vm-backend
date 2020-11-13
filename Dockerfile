@@ -1,3 +1,6 @@
+# Copyright 2020 VMware, Inc.
+# SPDX-License-Identifier: BSD-2-Clause
+
 FROM golang:1.15.2-buster AS builder
 WORKDIR /test-vmbackend
 COPY *.go /test-vmbackend/
