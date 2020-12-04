@@ -11,9 +11,11 @@ import (
 	"io"
 	"io/ioutil"
 	"log"
+	"math/rand"
 	"net/http"
 	"os"
 	"strings"
+	"time"
 )
 
 // Version of the program.
@@ -146,6 +148,7 @@ func mainE() error {
 }
 
 func main() {
+	rand.Seed(time.Now().UnixNano())
 	if err := mainE(); err != nil {
 		log.Fatal(err)
 	}

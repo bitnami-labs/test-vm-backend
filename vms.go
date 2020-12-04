@@ -7,6 +7,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"math/rand"
 	"time"
 )
 
@@ -28,20 +29,29 @@ const (
 )
 
 const (
-	// DefaultStartDelay Start VM process simulated delay
-	DefaultStartDelay = 10 * time.Second
+	// DefaultStartDelay Start VM process simulated delay, measured in timeUnits
+	DefaultStartDelay = 10
 
-	// DefaultStopDelay Stop VM process simulated delay
-	DefaultStopDelay = 5 * time.Second
+	// DefaultStopDelay Stop VM process simulated delay, measured in timeUnits
+	DefaultStopDelay = 5
 )
 
-var (
-	// StartDelay for launch operations (not a constant so unit test can change it)
-	StartDelay = DefaultStartDelay
+// timeUnit allows unit tests to change the timescale
+var timeUnit = time.Second
 
-	// StopDelay for stop operations (not a constant so unit test can change it)
-	StopDelay = DefaultStopDelay
-)
+// StartDelay for launch operations
+func StartDelay() time.Duration {
+	return randomDuration(timeUnit, 2*(DefaultStartDelay*timeUnit)-timeUnit)
+}
+
+// StopDelay for stop operations
+func StopDelay() time.Duration {
+	return randomDuration(timeUnit, 2*(DefaultStopDelay*timeUnit)-timeUnit)
+}
+
+func randomDuration(min, max time.Duration) time.Duration {
+	return time.Duration(rand.Intn(int(max-min+1))) + min
+}
 
 // VMsJSON filename where to store initial VMs state list
 const VMsJSON = "vms.json"

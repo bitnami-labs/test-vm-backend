@@ -41,7 +41,7 @@ func (c *Cloud) Launch(id int) (chan struct{}, error) {
 	if err := c.setVMState(id, STARTING); err != nil {
 		return nil, err
 	}
-	return c.delayedTransition(id, RUNNING, StartDelay), nil
+	return c.delayedTransition(id, RUNNING, StartDelay()), nil
 }
 
 // Stop a VM by id.
@@ -51,7 +51,7 @@ func (c *Cloud) Stop(id int) (chan struct{}, error) {
 	if err := c.setVMState(id, STOPPING); err != nil {
 		return nil, err
 	}
-	return c.delayedTransition(id, STOPPED, StopDelay), nil
+	return c.delayedTransition(id, STOPPED, StopDelay()), nil
 }
 
 // Delete VM by id.

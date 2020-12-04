@@ -141,9 +141,6 @@ func (s *VMServer) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			for _, m := range endpoint.Methods {
 				if r.Method == m.Method {
 					m.Handler(s, w, r)
-					if m.BodySpec == "" {
-						w.WriteHeader(http.StatusNoContent)
-					}
 					return
 				}
 			}

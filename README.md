@@ -218,6 +218,8 @@ Demotest: OK/PASS
 
 Demotest expects the backend just launched to work, from initial state.
 
+**NOTE: The start and stop delays have random durations around 10 and 5 seconds each. DO NOT rely on as durations and poll for completion like demotest.sh does.**
+
 ## CORS bypass
 
 This backend is intended as a quick tool to help develop a frontend quickly.

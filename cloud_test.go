@@ -5,6 +5,8 @@ package main
 
 import (
 	"fmt"
+	"math/rand"
+	"os"
 	"testing"
 	"time"
 )
@@ -20,6 +22,12 @@ const (
 const (
 	expectedNotFoundMsgFmt = "not found VM with id %d"
 )
+
+func TestMain(m *testing.M) {
+	rand.Seed(time.Now().UnixNano())
+	// call flag.Parse() here if TestMain uses flags
+	os.Exit(m.Run())
+}
 
 func NewDefaultCloud() Cloud {
 	return Cloud{vms: defaultVMs.clone()}
@@ -46,10 +54,9 @@ func forceState(cloud *Cloud, id int, state VMState) error {
 	return nil
 }
 
-// shrinkTime sets up shorter delays so that test can go faster
+// shrinkTime sets up shorter delays time units so that test can go faster
 func shrinkTime() {
-	StartDelay = 10 * time.Millisecond
-	StopDelay = 5 * time.Millisecond
+	timeUnit = time.Millisecond
 }
 
 // waitDone waits for a done channel to finish or a timeout to occur
@@ -104,7 +111,7 @@ func TestLaunch(t *testing.T) {
 		t.Fatalf("got: %s, want: %s", got, want)
 	}
 	// Wait and test 2nd transition
-	if err := waitDone(done, 10*StartDelay); err != nil {
+	if err := waitDone(done, 10*DefaultStartDelay*timeUnit); err != nil {
 		t.Fatal(err)
 	}
 	want2, err := copyInState(&c, GoodID, RUNNING)
@@ -153,7 +160,7 @@ func TestStop(t *testing.T) {
 		t.Fatalf("got: %v, want: %v", got, want)
 	}
 	// Wait and test 2nd transition
-	if err := waitDone(done, 10*StopDelay); err != nil {
+	if err := waitDone(done, 10*DefaultStopDelay*timeUnit); err != nil {
 		t.Fatal(err)
 	}
 	want2, err := copyInState(&c, GoodID, STOPPED)
