@@ -5,7 +5,7 @@ Hassle free for candidates, just use the binaries provided and no need to setup 
 
 ## End user experience
 
-The code in this repo compiles to a binaries for Linux, Mac or Windows. You get a ZIP file with all those binaries in a root folder (`./test-vmbackend-{version}/`), and the source code in another (`./test-vmbackend/`).
+The code in this repo compiles to a binaries for Linux, Mac or Windows. You get a ZIP file with all those binaries in a root folder (`./test-vm-backend-{version}/`), and the source code in another (`./test-vm-backend/`).
 
 Just pick the binary of the right architecture and run it. Unless you want to build from sources.
 
@@ -16,13 +16,13 @@ You need to have [Go installed locally](https://golang.org/doc/install) beforeha
 Once Go is installed locally just do:
 
 ~~~bash
-$ cd test-vmbackend # if you were not already in the source folder.
+$ cd test-vm-backend # if you were not already in the source folder.
 $ go build
 ~~~
 
 ## Run in Docker
 
-From within the `test-vmbackend` folder with the `Dockerfile` just do:
+From within the `test-vm-backend` folder with the `Dockerfile` just do:
 
 ~~~bash
 $ ./run_in_docker.sh
@@ -35,13 +35,13 @@ Parameters are accepted just as if that was a regular binary invocation.
 Launch the server on a terminal:
 
 ~~~bash
-$ ./test-vmbackend # or...
+$ ./test-vm-backend # or...
 
 $ ./run_in_docker.sh
 Sending build context to Docker daemon  9.282MB
 ...
-Successfully tagged test-vmbackend:latest
-2020/11/10 09:32:07 Test-VMBackend version Development
+Successfully tagged test-vm-backend:latest
+2020/11/10 09:32:07 Test VM Backend version Development
 2020/11/10 09:32:07 Loading fake Cloud state from local file "vms.json"
 API:
 GET	    /vms                	-> VMs JSON            	# list All VMs
