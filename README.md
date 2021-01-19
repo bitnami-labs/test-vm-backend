@@ -1,4 +1,4 @@
-# test-vmbackend
+# Test VM Backend
 Test back-end to be used by front-end projects.
 
 Hassle free for candidates, just use the binaries provided and no need to setup any dev env or dependencies, so they can just focus on their front-end stuff.
