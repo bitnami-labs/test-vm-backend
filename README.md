@@ -63,8 +63,8 @@ DELETE	/vms/{vm_id}        	-> Check status code   	# delete a VM by id
 Use the `--address` flag:
 
 ~~~bash
-$ ./test-vmbackend --address "0.0.0.0:6060"
-2020/11/10 09:36:13 Test-VMBackend version Development
+$ ./test-vm-backend --address "0.0.0.0:6060"
+2020/11/10 09:36:13 Test VM Backend version Development
 2020/11/10 09:36:13 Loading fake Cloud state from local file "vms.json"
 API:
 GET	    /vms                -> VMs JSON            	# list All VMs
@@ -190,7 +190,7 @@ The demo test script expects the backend in default address `:8080` and the `uiF
 
 ~~~bash
 $ ./demotest.sh 
-Expects test-vmbackend running on default port: 8080
+Expects test-vm-backend running on default port: 8080
 GET http://localhost:8080/vms
 {"0":{"vcpus":1,"clock":1500,"ram":4096,"storage":128,"network":1000,"state":"Stopped"},"1":{"vcpus":4,"clock":3600,"ram":32768,"storage":512,"network":10000,"state":"Stopped"},"2":{"vcpus":2,"clock":2200,"ram":8192,"storage":256,"network":1000,"state":"Stopped"}}
 GET http://localhost:8080/vms/0
@@ -241,14 +241,14 @@ If the Frontend consists mostly on code running on the browser directly, it migh
 That way the browser will not see the frontend being loaded from a domain, and then its code using an API from another domain. Otherwise the setup would cause Cross Origin Resource Sharing errors.
 
 ~~~
-[Code in Browser] <=> [test-vmbackend API + ui frontend file serving]
+[Code in Browser] <=> [test-vm-backend API + ui frontend file serving]
 ~~~
 
-To that end the `test-vmbackend` accepts `string` parameter `--uiFolder` so that the given folder files will be served to the browser from the same backend program:
+To that end the `test-vm-backend` accepts `string` parameter `--uiFolder` so that the given folder files will be served to the browser from the same backend program:
 
 ~~~bash
-$ ./test-vmbackend --uiFolder=./ui/
-2020/11/01 10:51:27 Test-VMBackend version Development
+$ ./test-vm-backend --uiFolder=./ui/
+2020/11/01 10:51:27 Test VM Backend version Development
 ...
 2020/11/01 10:51:27 Serving static files for the UI at "./ui/"
 ~~~

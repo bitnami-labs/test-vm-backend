@@ -6,7 +6,7 @@ set -euo pipefail
 
 DIR=$(dirname "${BASH_SOURCE[0]}" )
 version=$(cat "$DIR/VERSION")
-binary=test-vmbackend
+binary=test-vm-backend
 kbdir="/keybase/team/bitnami.publicservices/${binary}"
 archs="linux darwin windows"
 
@@ -57,7 +57,7 @@ popd
 pushd ..
 zip -r "${kbdir}/releases/${binary}-${version}.zip" \
   "./${binary}" -x '*.git*' -x "*release.sh" -x "*next-version.sh" \
-  -x "*vms.json" -x "*test-vmbackend" -x "*.vscode*"
+  -x "*vms.json" -x "*test-vm-backend" -x "*.vscode*"
 popd
 
 echo "Pointing latest to ${version}"

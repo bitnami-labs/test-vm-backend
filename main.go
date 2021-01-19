@@ -114,7 +114,7 @@ func rootHandler(fileServer http.Handler, apiServer http.Handler) http.Handler {
 }
 
 func mainE() error {
-	log.Printf("Test-VMBackend version %s", Version)
+	log.Printf("Test VM Backend version %s", Version)
 	var address string
 	var uiFolder string
 	flag.StringVar(&address, "address", ":8080", "Listen address for the backend")

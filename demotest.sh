@@ -5,7 +5,7 @@
 set -euo pipefail
 
 port=8080
-echo "Expects test-vmbackend running on default port: ${port}"
+echo "Expects Test VM Backend running on default port: ${port}"
 
 function call {
   method=$1
