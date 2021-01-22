@@ -1,5 +1,9 @@
 # Contributing
 
+The **project team welcomes contributions from the community**.
+
+*Before you start working with this project, please read our [Developer Certificate of Origin](https://cla.vmware.com/dco). All contributions to this repository must be signed as described on that page. Your signature certifies that you wrote the patch or have the right to pass it on as an open-source patch*.
+
 If you experience an issue with this software, do not hesitate to create an issue on the github repo.
 
 If you found a bug fix, you are welcome to report and send us a PR for review.
