@@ -108,7 +108,7 @@ Units:
 - `clock` is measured in  `Mhz`.
 - `ram` is `MiB`.
 - `storage` is `GiB`.
-- `network` is `Gbps`.
+- `network` is `Mbps`.
 - `state` is one of `"Stopped"`, `"Starting"`, `"Running"`, `"Stopping"`.
 
 ## Testing
